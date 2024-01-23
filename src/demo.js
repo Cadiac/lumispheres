@@ -41,16 +41,21 @@ export const run = async () => {
       colorShift: [255, 235, 255],
     },
     dragon: {
-      // prettier-ignore
-      tail: [
-        0.0, 0.0, 0.0, 0.0,
-        1.0, 0.0, 0.0, 0.0,
-        2.0, 0.0, 0.0, 0.0,
-        3.0, 0.0, 0.0, 0.0,
-        4.0, 0.0, 0.0, 0.0
-      ],
+      target: {
+        x: 5,
+        y: 0.0,
+        z: 0.0,
+      },
+      tail: [...Array(40).keys()].flatMap((i) => [
+        i / 3,
+        0.0,
+        0.0,
+        Math.sqrt(0.5 + i / 80),
+      ]),
     },
   };
+
+  console.log(state.dragon);
 
   document.addEventListener(
     "keydown",
@@ -81,14 +86,20 @@ export const run = async () => {
   const gui = new dat.GUI();
 
   function update() {
-    const speed = 5000;
-    state.camera.position.x = 2 + Math.sin(state.now / speed) * 20;
-    state.camera.position.y = 2 + (1 + Math.cos(state.now / speed)) * 2;
-    state.camera.position.z = 2 + Math.cos(state.now / speed) * 20;
+    if (!state.camera.stop) {
+      const speed = 5000;
+      state.camera.position.x = 2 + Math.sin(state.now / speed) * 20;
+      state.camera.position.y = 2 + (1 + Math.cos(state.now / speed)) * 2;
+      state.camera.position.z = 2 + Math.cos(state.now / speed) * 20;
+    }
 
     for (let index = 0; index < state.dragon.tail.length / 4; index++) {
-      state.dragon.tail[index * 4 + 2] = Math.sin(index + state.now / 1000);
-      state.dragon.tail[index * 4 + 1] = Math.cos(index + state.now / 1500);
+      state.dragon.tail[index * 4 + 2] =
+        2.0 * Math.sin(index / 3 + state.now / 2000) +
+        4.0 * Math.cos(index / 4 + state.now / 3000);
+      state.dragon.tail[index * 4 + 1] =
+        2.0 * Math.cos(index / 2 + state.now / 3000) +
+        4.0 * Math.sin(index / 4 + state.now / 2000);
     }
   }
 
@@ -100,10 +111,8 @@ export const run = async () => {
       return;
     }
 
-    if (!state.camera.stop) {
-      // const dt = state.now - state.lastRenderTime;
-      update();
-    }
+    // const dt = state.now - state.lastRenderTime;
+    update();
 
     try {
       if (
@@ -174,6 +183,12 @@ export const run = async () => {
       gl.uniform4fv(
         gl.getUniformLocation(program, "u_tail"),
         state.dragon.tail
+      );
+      gl.uniform3f(
+        gl.getUniformLocation(program, "u_tail_target"),
+        state.dragon.target.x,
+        state.dragon.target.y,
+        state.dragon.target.z
       );
 
       // set_uniform4_f32v
@@ -278,6 +293,11 @@ export const run = async () => {
       sunFolder.add(state.sun, "x", -100, 100, 0.01).listen();
       sunFolder.add(state.sun, "y", -100, 100, 0.01).listen();
       sunFolder.add(state.sun, "z", -100, 100, 0.01).listen();
+
+      const dragonFolder = gui.addFolder("Dragon");
+      dragonFolder.add(state.dragon.target, "x", -100, 100, 0.01).listen();
+      dragonFolder.add(state.dragon.target, "y", -100, 100, 0.01).listen();
+      dragonFolder.add(state.dragon.target, "z", -100, 100, 0.01).listen();
 
       window.requestAnimationFrame(render);
     } catch (err) {

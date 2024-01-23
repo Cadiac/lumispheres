@@ -1,6 +1,6 @@
 precision highp float;
 
-const int TAIL_COUNT = 5;
+const int TAIL_COUNT = 40;
 const float MAX_DIST = 250.0;
 const float EPSILON = .0001;
 const float PI = 3.14159265;
@@ -19,6 +19,7 @@ uniform float u_fog_intensity;
 uniform vec3 u_sky_color;
 uniform vec3 u_color_shift;
 uniform vec4 u_tail[TAIL_COUNT];
+uniform vec3 u_tail_target;
 
 struct Material {
   vec3 diffuse;
@@ -40,6 +41,14 @@ struct Ray {
   bool is_hit;
 };
 
+mat4 lookAt(vec3 camera, vec3 target, vec3 up) {
+  vec3 f = normalize(target - camera);
+  vec3 s = normalize(cross(up, f));
+  vec3 u = cross(f, s);
+
+  return mat4(vec4(s, .0), vec4(u, .0), vec4(-f, .0), vec4(.0, .0, .0, 1.));
+}
+
 float sdSphere(vec3 p, float s) { return length(p) - s; }
 
 float sdBox(vec3 p, vec3 b) {
@@ -47,21 +56,86 @@ float sdBox(vec3 p, vec3 b) {
   return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
+float sdVesicaSegment(in vec3 p, in vec3 a, in vec3 b, in float w) {
+  vec3 c = (a + b) * 0.5;
+  float l = length(b - a);
+  vec3 v = (b - a) / l;
+  float y = dot(p - c, v);
+  vec2 q = vec2(length(p - c - y * v), abs(y));
+
+  float r = 0.5 * l;
+  float d = 0.5 * (r * r - w * w) / w;
+  vec3 h = (r * q.x < d * (q.y - r)) ? vec3(0.0, r, 0.0) : vec3(-d, 0.0, d + w);
+
+  return length(q - h.xy) - h.z;
+}
+
 float opSmoothUnion(float d1, float d2, float k) {
   float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);
   return mix(d2, d1, h) - k * h * (1.0 - h);
 }
 
-Surface scene(in vec3 p) {
-  float dist = 1e5;
+// Translations
+// http://en.wikipedia.org/wiki/Rotation_matrix#Basic_rotations
+mat3 tRotateX(float theta) {
+  float s = sin(theta);
+  float c = cos(theta);
 
-  for (int i = 0; i < TAIL_COUNT; ++i) {
-    float d = sdBox(p + u_tail[i].xyz, vec3(0.5));
-    dist = opSmoothUnion(dist, d, 1.0);
-  }
+  return mat3(vec3(1, 0, 0), vec3(0, c, -s), vec3(0, s, c));
+}
+
+mat3 tRotateY(float theta) {
+  float s = sin(theta);
+  float c = cos(theta);
+
+  return mat3(vec3(c, 0, s), vec3(0, 1, 0), vec3(-s, 0, c));
+}
+
+mat3 tRotateZ(float theta) {
+  float s = sin(theta);
+  float c = cos(theta);
+
+  return mat3(vec3(c, -s, 0), vec3(s, c, 0), vec3(0, 0, 1));
+}
+
+vec2 spiral(in float x) {
+  float t = u_time / 1000.;
+  return vec2(0.1 * cos(x * 4.0 + t) + 0.1 * sin(x * 3.0 + t),
+              0.2 * sin(x * 4.0 + t) + 0.15 * cos(x * 3.0 + t));
+}
+
+Surface scene(in vec3 p) {
+  vec3 a = vec3(0.);
+  vec3 b = vec3(10., 0., 0.);
+  float w = sqrt(1.0 / length((a - b)));
+
+  vec2 curve = spiral(p.x);
+
+  p.zy -= curve;
+  p.z += 0.2 * sin(p.x + u_time / 5000.);
+  p.y += 0.2 * cos(p.x + u_time / 5000.);
+
+  float dist = sdVesicaSegment(p, a, b, w * 0.7) - w * 0.2;
+
+  // for (int i = 0; i < TAIL_COUNT; ++i) {
+  //   vec3 center = u_tail[i].xyz;
+  //   vec3 target = -u_tail_target;
+
+  //   if (i > 0) {
+  //     target = u_tail[i - 1].xyz;
+  //   }
+
+  //   // mat4 rotation = lookAt(u_tail[i].xyz, target, vec3(0.0, 1.0, 0.0));
+  //   // vec3 pp = (rotation * vec4(p + u_tail[i].xyz, 0.0)).xyz;
+  //   // float d = sdSphere(p + u_tail[i].xyz, u_tail[i].w);
+
+  //   dist = opSmoothUnion(dist, d, 0.1);
+  // }
+
+  // dist = opSmoothUnion(dist, sdSphere(p + u_tail_target, 0.1), 0.1);
 
   Material material =
-      Material(vec3(0.8), vec3(0.2), vec3(0.5, 0.4, 0.3), 10., 0.5);
+      Material(vec3(0.8), vec3(0.2), vec3(0.5, 0.4, 0.3), 10., 0.0);
 
   return Surface(1, dist, material);
 }
@@ -102,14 +176,6 @@ float softShadows(in vec3 sunDir, in vec3 p, float k) {
   }
 
   return opacity;
-}
-
-mat4 lookAt(vec3 camera, vec3 target, vec3 up) {
-  vec3 f = normalize(target - camera);
-  vec3 s = normalize(cross(up, f));
-  vec3 u = cross(f, s);
-
-  return mat4(vec4(s, .0), vec4(u, .0), vec4(-f, .0), vec4(.0, .0, .0, 1.));
 }
 
 vec3 lightning(in vec3 sunDir, in vec3 normal, in vec3 p, in vec3 rayDir,

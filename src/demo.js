@@ -15,9 +15,9 @@ export const run = async () => {
       stop: false,
       fov: 60,
       position: {
-        x: 10,
-        y: 10,
-        z: 30,
+        x: 6,
+        y: 0,
+        z: 6,
       },
       target: {
         x: 0,
@@ -88,18 +88,9 @@ export const run = async () => {
   function update() {
     if (!state.camera.stop) {
       const speed = 5000;
-      state.camera.position.x = 2 + Math.sin(state.now / speed) * 20;
-      state.camera.position.y = 2 + (1 + Math.cos(state.now / speed)) * 2;
-      state.camera.position.z = 2 + Math.cos(state.now / speed) * 20;
-    }
-
-    for (let index = 0; index < state.dragon.tail.length / 4; index++) {
-      state.dragon.tail[index * 4 + 2] =
-        2.0 * Math.sin(index / 3 + state.now / 2000) +
-        4.0 * Math.cos(index / 4 + state.now / 3000);
-      state.dragon.tail[index * 4 + 1] =
-        2.0 * Math.cos(index / 2 + state.now / 3000) +
-        4.0 * Math.sin(index / 4 + state.now / 2000);
+      // state.camera.position.x = 4 + Math.sin(state.now / speed) * 2;
+      // state.camera.position.y = -2 + (1 + Math.cos(state.now / speed)) * 0;
+      // state.camera.position.z = 4 + Math.cos(state.now / speed) * 2;
     }
   }
 
@@ -179,19 +170,6 @@ export const run = async () => {
         state.colorShift.colorShift[1] / 255,
         state.colorShift.colorShift[2] / 255
       );
-
-      gl.uniform4fv(
-        gl.getUniformLocation(program, "u_tail"),
-        state.dragon.tail
-      );
-      gl.uniform3f(
-        gl.getUniformLocation(program, "u_tail_target"),
-        state.dragon.target.x,
-        state.dragon.target.y,
-        state.dragon.target.z
-      );
-
-      // set_uniform4_f32v
 
       // Draw to frame buffer texture
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

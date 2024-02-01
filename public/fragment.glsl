@@ -3,7 +3,7 @@ precision highp float;
 const float MAX_DIST = 250.0;
 const float EPSILON = .0001;
 const float PI = 3.14159265;
-const int MAX_ITERATIONS = 100;
+const int MAX_ITERATIONS = 400;
 
 uniform float u_time;
 uniform float u_fov;
@@ -17,6 +17,9 @@ uniform vec3 u_fog_color;
 uniform float u_fog_intensity;
 uniform vec3 u_sky_color;
 uniform vec3 u_color_shift;
+
+const int SPHERES_COUNT = 2;
+uniform vec4 u_spheres[SPHERES_COUNT];
 
 struct Material {
   vec3 diffuse;
@@ -248,14 +251,23 @@ float sdButterfly(in vec3 p) {
   return dist;
 }
 
+float sdPlane(vec3 p, vec3 n, float h) {
+  // n must be normalized
+  return dot(p, n) + h;
+}
+
 Surface scene(in vec3 p) {
-  float dist =
-      sdButterfly(p - vec3(2. * sin(u_time / 5000.), 1. * cos(u_time / 200.),
-                           2. * cos(u_time / 3000.)));
+  float dist = sdSphere(p - vec3(0., 2., 0.), 1.0);
 
-  vec3 col = vec3(0, 0.83, 1.0);
+  for (int i = 0; i < SPHERES_COUNT; ++i) {
+    dist = opUnion(dist, sdSphere(p - u_spheres[i].xyz, u_spheres[i].w));
+  }
 
-  Material material = Material(col, 0.2 * col, col, 1., 0.2);
+  dist = opUnion(dist, sdPlane(p, vec3(0., 1., 0.), 0.0));
+
+  vec3 color = vec3(0.43, 0.42, 0.4);
+
+  Material material = Material(color, vec3(0.0), color, 1., 0.0);
 
   return Surface(1, dist, material);
 }
@@ -298,22 +310,30 @@ float softShadows(in vec3 sunDir, in vec3 p, float k) {
   return opacity;
 }
 
-vec3 lightning(in vec3 sunDir, in vec3 normal, in vec3 p, in vec3 rayDir,
-               in float rayDist, Material material) {
-  vec3 ambient = material.ambient;
+vec3 lightning(in vec3 lightDir, in vec3 normal, in vec3 p, in vec3 rayDir,
+               in float rayDist, Material material, vec3 camera) {
 
-  float shadow = softShadows(sunDir, p, 10.0);
-  float dotLN = clamp(dot(sunDir, normal) * shadow, 0., 1.);
-  vec3 diffuse = material.diffuse * dotLN;
+  float shadow = softShadows(lightDir, p, 32.0);
+  float diffuse = clamp(dot(normal, lightDir), 0.0, 1.0);
+  float sky_diffuse =
+      clamp(0.5 + 0.5 * dot(normal, vec3(0.0, 1.0, 0.0)), 0.0, 1.0);
+  float bounce_diffuse =
+      clamp(0.2 + 0.2 * dot(normal, vec3(0.0, -1.0, 0.0)), 0.0, 1.0);
 
-  float dotRV = clamp(dot(reflect(sunDir, normal), rayDir), 0., 1.);
-  vec3 specular = material.specular * pow(dotRV, material.hardness);
+  vec3 h = normalize(lightDir + normalize((camera - p)));
+  float spec = pow(max(0.0, dot(normal, lightDir)), 128.0);
 
-  vec3 color = ambient + diffuse + specular;
+  vec3 light = vec3(0.0);
 
-  // Fog
-  vec3 e = exp2(-rayDist * u_fog_intensity * u_color_shift);
-  return color * e + (1. - e) * u_fog_color;
+  light += vec3(7.0, 5.8, 3.6) * diffuse * shadow;
+  light += vec3(0.5, 0.8, 0.6) * sky_diffuse;
+  light += vec3(0.6, 0.3, 0.1) * bounce_diffuse;
+
+  vec3 color = material.diffuse * light;
+
+  color += material.specular * spec * shadow;
+
+  return color;
 }
 
 Ray rayMarch(in vec3 camera, in vec3 rayDir) {
@@ -369,10 +389,19 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir) {
                             k.yxy * scene(ray.pos + k.yxy * EPSILON).dist +
                             k.xxx * scene(ray.pos + k.xxx * EPSILON).dist);
 
-    vec3 newColor =
-        lightning(sunDir, normal, ray.pos, dir, rayDist, ray.surface.material);
+    vec3 lightDir = normalize(
+        vec3(3.0 * cos(u_time / 1000.0), 5.0, sin(u_time / 1000.0) * 5.0));
 
-    color = mix(color, newColor, reflection);
+    vec3 light = 1.0 * lightning(lightDir, normal, ray.pos, dir, rayDist,
+                                 ray.surface.material, camera);
+
+    // vec3 newColor = normalize(ray.surface.material.diffuse + light);
+
+    color = mix(color, light, reflection);
+
+    // Fog
+    vec3 e = exp2(-rayDist * u_fog_intensity * u_color_shift);
+    color = color * e + (1. - e) * u_fog_color;
 
     reflection *= ray.surface.material.reflectivity;
     if (reflection < EPSILON) {

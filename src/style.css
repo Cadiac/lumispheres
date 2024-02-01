@@ -1,0 +1,6 @@
+#fps {
+    position: fixed;
+    z-index: 1;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+}

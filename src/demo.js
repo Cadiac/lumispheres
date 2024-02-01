@@ -1,11 +1,69 @@
 import * as dat from "dat.gui";
 
+const gravity = -9.8;
+const boxWidth = 10;
+const boxHeight = 10;
+
+class Sphere {
+  constructor(x, y, z, radius) {
+    this.position = { x, y, z };
+    this.velocity = { x: 0, y: 0, z: 0 };
+    this.radius = radius;
+  }
+
+  asVec4f() {
+    return [this.position.x, this.position.y, this.position.z, 1.0];
+  }
+
+  updatePosition(dt) {
+    this.velocity.y += gravity * dt;
+    this.position.x += this.velocity.x * dt;
+    this.position.y += this.velocity.y * dt;
+    this.position.z += this.velocity.z * dt;
+  }
+
+  checkWallCollision(boxWidth, boxHeight) {
+    const dampening = 0.8;
+
+    if (this.position.x - this.radius < -boxWidth) {
+      this.velocity.x = -this.velocity.x * dampening;
+      this.position.x = -boxWidth / 2 + this.radius;
+    }
+
+    if (this.position.x + this.radius > boxWidth) {
+      this.velocity.x = -this.velocity.x * dampening;
+      this.position.x = boxWidth - this.radius;
+    }
+
+    if (this.position.y - this.radius < 0) {
+      this.velocity.y = -this.velocity.y * dampening;
+      this.position.y = this.radius;
+    }
+
+    if (this.position.y + this.radius > boxHeight) {
+      this.velocity.y = -this.velocity.y * dampening;
+      this.position.y = boxWidth - this.radius;
+    }
+
+    if (this.position.z - this.radius < -boxWidth) {
+      this.velocity.z = -this.velocity.z * dampening;
+      this.position.z = this.radius;
+    }
+
+    if (this.position.z + this.radius > boxWidth) {
+      this.velocity.z = -this.velocity.z * dampening;
+      this.position.z = boxWidth - this.radius;
+    }
+  }
+}
+
 export const run = async () => {
   let state = {
     halt: false,
     epoch: performance.now(),
     frame: 0,
     now: 0,
+    dt: 0,
     lastRenderTime: 0,
     resolution: {
       x: 0,
@@ -16,7 +74,7 @@ export const run = async () => {
       fov: 60,
       position: {
         x: 6,
-        y: 0,
+        y: 3,
         z: 6,
       },
       target: {
@@ -31,31 +89,19 @@ export const run = async () => {
       z: 0.5,
     },
     fog: {
-      color: [0, 84, 192],
+      color: [0, 0, 0],
       intensity: 0.005,
     },
     sky: {
-      color: [0, 84, 192],
+      color: [0, 0, 0],
     },
     colorShift: {
       colorShift: [255, 235, 255],
     },
-    dragon: {
-      target: {
-        x: 5,
-        y: 0.0,
-        z: 0.0,
-      },
-      tail: [...Array(40).keys()].flatMap((i) => [
-        i / 3,
-        0.0,
-        0.0,
-        Math.sqrt(0.5 + i / 80),
-      ]),
+    spheres: {
+      objects: [new Sphere(4, 9, 0, 1), new Sphere(-4, 6, 0, 1)],
     },
   };
-
-  console.log(state.dragon);
 
   document.addEventListener(
     "keydown",
@@ -84,26 +130,50 @@ export const run = async () => {
 
   const gl = canvas.getContext("webgl");
   const gui = new dat.GUI();
+  const fpsCounter = document.querySelector("#fps");
 
-  function update() {
-    if (!state.camera.stop) {
-      const speed = 5000;
-      // state.camera.position.x = 4 + Math.sin(state.now / speed) * 2;
-      // state.camera.position.y = -2 + (1 + Math.cos(state.now / speed)) * 0;
-      // state.camera.position.z = 4 + Math.cos(state.now / speed) * 2;
-    }
+  const frameTimes = [];
+  let frameCursor = 0;
+  let numFrames = 0;
+  const maxFrames = 20;
+  let totalFPS = 0;
+
+  function update(dt) {
+    // if (!state.camera.stop) {
+    //   const speed = 5000;
+    //   state.camera.position.x = 4 + Math.sin(state.now / speed) * 2;
+    //   state.camera.position.y = -2 + (1 + Math.cos(state.now / speed)) * 0;
+    //   state.camera.position.z = 4 + Math.cos(state.now / speed) * 2;
+    // }
+
+    updateFps(dt);
+
+    state.spheres.objects.forEach((sphere) => {
+      sphere.updatePosition(dt);
+      sphere.checkWallCollision(boxWidth, boxHeight);
+    });
+  }
+
+  function updateFps(dt) {
+    const fps = 1 / dt;
+    totalFPS += fps - (frameTimes[frameCursor] || 0);
+    frameTimes[frameCursor++] = fps;
+    numFrames = Math.max(numFrames, frameCursor);
+    frameCursor %= maxFrames;
+    const averageFPS = totalFPS / numFrames;
+    fpsCounter.textContent = `FPS: ${averageFPS.toFixed(1)}`;
   }
 
   function render() {
     state.now = performance.now() - state.epoch;
+    const dt = (state.now - state.lastRenderTime) / 1000;
     state.lastRenderTime = state.now;
 
     if (state.halt) {
       return;
     }
 
-    // const dt = state.now - state.lastRenderTime;
-    update();
+    update(dt);
 
     try {
       if (
@@ -169,6 +239,11 @@ export const run = async () => {
         state.colorShift.colorShift[0] / 255,
         state.colorShift.colorShift[1] / 255,
         state.colorShift.colorShift[2] / 255
+      );
+
+      gl.uniform4fv(
+        gl.getUniformLocation(program, "u_spheres"),
+        state.spheres.objects.flatMap((sphere) => sphere.asVec4f())
       );
 
       // Draw to frame buffer texture
@@ -272,10 +347,7 @@ export const run = async () => {
       sunFolder.add(state.sun, "y", -100, 100, 0.01).listen();
       sunFolder.add(state.sun, "z", -100, 100, 0.01).listen();
 
-      const dragonFolder = gui.addFolder("Dragon");
-      dragonFolder.add(state.dragon.target, "x", -100, 100, 0.01).listen();
-      dragonFolder.add(state.dragon.target, "y", -100, 100, 0.01).listen();
-      dragonFolder.add(state.dragon.target, "z", -100, 100, 0.01).listen();
+      const dragonFolder = gui.addFolder("Spheres");
 
       window.requestAnimationFrame(render);
     } catch (err) {

@@ -18,7 +18,7 @@ uniform float u_fog_intensity;
 uniform vec3 u_sky_color;
 uniform vec3 u_color_shift;
 
-const int SPHERES_COUNT = 2;
+const int SPHERES_COUNT = 5;
 uniform vec4 u_spheres[SPHERES_COUNT];
 
 struct Material {
@@ -257,7 +257,7 @@ float sdPlane(vec3 p, vec3 n, float h) {
 }
 
 Surface scene(in vec3 p) {
-  float dist = sdSphere(p - vec3(0., 2., 0.), 1.0);
+  float dist = 1e5;
 
   for (int i = 0; i < SPHERES_COUNT; ++i) {
     dist = opUnion(dist, sdSphere(p - u_spheres[i].xyz, u_spheres[i].w));

@@ -4,11 +4,62 @@ const gravity = -9.8;
 const boxWidth = 10;
 const boxHeight = 10;
 
+function detectAndRespondToCollision(sphere1, sphere2) {
+  const dx = sphere1.position.x - sphere2.position.x;
+  const dy = sphere1.position.y - sphere2.position.y;
+  const dz = sphere1.position.z - sphere2.position.z;
+  const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+  // Check if the spheres are colliding
+  if (distance < sphere1.radius + sphere2.radius) {
+    // Calculate the vector from sphere1 to sphere2
+    const dx = sphere2.position.x - sphere1.position.x;
+    const dy = sphere2.position.y - sphere1.position.y;
+    const dz = sphere2.position.z - sphere1.position.z;
+
+    // Normalize the direction vector
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const nx = dx / distance; // Normalized direction vector components
+    const ny = dy / distance;
+    const nz = dz / distance;
+
+    // Calculate the velocity components along the normalized direction vector
+    const v1i =
+      sphere1.velocity.x * nx +
+      sphere1.velocity.y * ny +
+      sphere1.velocity.z * nz;
+    const v2i =
+      sphere2.velocity.x * nx +
+      sphere2.velocity.y * ny +
+      sphere2.velocity.z * nz;
+
+    // Calculate the final velocities along the collision line using the conservation of momentum and kinetic energy
+    const v1f =
+      (v1i * (sphere1.mass - sphere2.mass) + 2 * sphere2.mass * v2i) /
+      (sphere1.mass + sphere2.mass);
+    const v2f =
+      (v2i * (sphere2.mass - sphere1.mass) + 2 * sphere1.mass * v1i) /
+      (sphere1.mass + sphere2.mass);
+
+    // Update the velocities of the spheres
+    sphere1.velocity.x += (v1f - v1i) * nx;
+    sphere1.velocity.y += (v1f - v1i) * ny;
+    sphere1.velocity.z += (v1f - v1i) * nz;
+
+    sphere2.velocity.x += (v2f - v2i) * nx;
+    sphere2.velocity.y += (v2f - v2i) * ny;
+    sphere2.velocity.z += (v2f - v2i) * nz;
+
+    // TODO: Push the spheres radius away from each other, perhaps radius + half of how much there was overlap?
+  }
+}
+
 class Sphere {
   constructor(x, y, z, radius) {
     this.position = { x, y, z };
     this.velocity = { x: 0, y: 0, z: 0 };
     this.radius = radius;
+    this.mass = 1;
   }
 
   asVec4f() {
@@ -27,12 +78,10 @@ class Sphere {
 
     if (this.position.x - this.radius < -boxWidth) {
       this.velocity.x = -this.velocity.x * dampening;
-      this.position.x = -boxWidth / 2 + this.radius;
     }
 
     if (this.position.x + this.radius > boxWidth) {
       this.velocity.x = -this.velocity.x * dampening;
-      this.position.x = boxWidth - this.radius;
     }
 
     if (this.position.y - this.radius < 0) {
@@ -47,12 +96,10 @@ class Sphere {
 
     if (this.position.z - this.radius < -boxWidth) {
       this.velocity.z = -this.velocity.z * dampening;
-      this.position.z = this.radius;
     }
 
     if (this.position.z + this.radius > boxWidth) {
       this.velocity.z = -this.velocity.z * dampening;
-      this.position.z = boxWidth - this.radius;
     }
   }
 }
@@ -73,9 +120,9 @@ export const run = async () => {
       stop: false,
       fov: 60,
       position: {
-        x: 6,
+        x: 30,
         y: 3,
-        z: 6,
+        z: 15,
       },
       target: {
         x: 0,
@@ -99,7 +146,38 @@ export const run = async () => {
       colorShift: [255, 235, 255],
     },
     spheres: {
-      objects: [new Sphere(4, 9, 0, 1), new Sphere(-4, 6, 0, 1)],
+      objects: [
+        new Sphere(
+          10 * Math.random(),
+          1 + 9 * Math.random(),
+          10 * Math.random(),
+          1
+        ),
+        new Sphere(
+          10 * Math.random(),
+          1 + 9 * Math.random(),
+          10 * Math.random(),
+          1
+        ),
+        new Sphere(
+          10 * Math.random(),
+          1 + 9 * Math.random(),
+          10 * Math.random(),
+          1
+        ),
+        new Sphere(
+          10 * Math.random(),
+          1 + 9 * Math.random(),
+          10 * Math.random(),
+          1
+        ),
+        new Sphere(
+          10 * Math.random(),
+          1 + 9 * Math.random(),
+          10 * Math.random(),
+          1
+        ),
+      ],
     },
   };
 
@@ -150,6 +228,19 @@ export const run = async () => {
 
     state.spheres.objects.forEach((sphere) => {
       sphere.updatePosition(dt);
+    });
+
+    // Check for collisions
+    for (let i = 0; i < state.spheres.objects.length; i++) {
+      for (let j = i + 1; j < state.spheres.objects.length; j++) {
+        detectAndRespondToCollision(
+          state.spheres.objects[i],
+          state.spheres.objects[j]
+        );
+      }
+    }
+
+    state.spheres.objects.forEach((sphere) => {
       sphere.checkWallCollision(boxWidth, boxHeight);
     });
   }

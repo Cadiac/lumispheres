@@ -1,72 +1,21 @@
 import * as dat from "dat.gui";
 
-const gravity = -9.8;
 const boxWidth = 10;
 const boxHeight = 10;
-
-function detectAndRespondToCollision(sphere1, sphere2) {
-  const dx = sphere1.position.x - sphere2.position.x;
-  const dy = sphere1.position.y - sphere2.position.y;
-  const dz = sphere1.position.z - sphere2.position.z;
-  const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-  // Check if the spheres are colliding
-  if (distance < sphere1.radius + sphere2.radius) {
-    // Calculate the vector from sphere1 to sphere2
-    const dx = sphere2.position.x - sphere1.position.x;
-    const dy = sphere2.position.y - sphere1.position.y;
-    const dz = sphere2.position.z - sphere1.position.z;
-
-    // Normalize the direction vector
-    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    const nx = dx / distance; // Normalized direction vector components
-    const ny = dy / distance;
-    const nz = dz / distance;
-
-    // Calculate the velocity components along the normalized direction vector
-    const v1i =
-      sphere1.velocity.x * nx +
-      sphere1.velocity.y * ny +
-      sphere1.velocity.z * nz;
-    const v2i =
-      sphere2.velocity.x * nx +
-      sphere2.velocity.y * ny +
-      sphere2.velocity.z * nz;
-
-    // Calculate the final velocities along the collision line using the conservation of momentum and kinetic energy
-    const v1f =
-      (v1i * (sphere1.mass - sphere2.mass) + 2 * sphere2.mass * v2i) /
-      (sphere1.mass + sphere2.mass);
-    const v2f =
-      (v2i * (sphere2.mass - sphere1.mass) + 2 * sphere1.mass * v1i) /
-      (sphere1.mass + sphere2.mass);
-
-    // Update the velocities of the spheres
-    sphere1.velocity.x += (v1f - v1i) * nx;
-    sphere1.velocity.y += (v1f - v1i) * ny;
-    sphere1.velocity.z += (v1f - v1i) * nz;
-
-    sphere2.velocity.x += (v2f - v2i) * nx;
-    sphere2.velocity.y += (v2f - v2i) * ny;
-    sphere2.velocity.z += (v2f - v2i) * nz;
-
-    // TODO: Push the spheres radius away from each other, perhaps radius + half of how much there was overlap?
-  }
-}
 
 class Sphere {
   constructor(x, y, z, radius) {
     this.position = { x, y, z };
     this.velocity = { x: 0, y: 0, z: 0 };
     this.radius = radius;
-    this.mass = 1;
+    this.mass = (4 / 3) * Math.PI * Math.pow(radius, 3);
   }
 
   asVec4f() {
-    return [this.position.x, this.position.y, this.position.z, 1.0];
+    return [this.position.x, this.position.y, this.position.z, this.radius];
   }
 
-  updatePosition(dt) {
+  updatePosition(dt, gravity) {
     this.velocity.y += gravity * dt;
     this.position.x += this.velocity.x * dt;
     this.position.y += this.velocity.y * dt;
@@ -116,6 +65,7 @@ export const run = async () => {
       x: 0,
       y: 0,
     },
+    gravity: -0.5,
     camera: {
       stop: false,
       fov: 60,
@@ -151,31 +101,61 @@ export const run = async () => {
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1
+          1 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1
+          1 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1
+          1 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1
+          1 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1
+          1 + Math.random()
+        ),
+        new Sphere(
+          10 * Math.random(),
+          1 + 9 * Math.random(),
+          10 * Math.random(),
+          1 + Math.random()
+        ),
+        new Sphere(
+          10 * Math.random(),
+          1 + 9 * Math.random(),
+          10 * Math.random(),
+          1 + Math.random()
+        ),
+        new Sphere(
+          10 * Math.random(),
+          1 + 9 * Math.random(),
+          10 * Math.random(),
+          1 + Math.random()
+        ),
+        new Sphere(
+          10 * Math.random(),
+          1 + 9 * Math.random(),
+          10 * Math.random(),
+          1 + Math.random()
+        ),
+        new Sphere(
+          10 * Math.random(),
+          1 + 9 * Math.random(),
+          10 * Math.random(),
+          1 + Math.random()
         ),
       ],
     },
@@ -216,27 +196,76 @@ export const run = async () => {
   const maxFrames = 20;
   let totalFPS = 0;
 
-  function update(dt) {
-    // if (!state.camera.stop) {
-    //   const speed = 5000;
-    //   state.camera.position.x = 4 + Math.sin(state.now / speed) * 2;
-    //   state.camera.position.y = -2 + (1 + Math.cos(state.now / speed)) * 0;
-    //   state.camera.position.z = 4 + Math.cos(state.now / speed) * 2;
-    // }
+  function handleCollisions(sphere1, sphere2) {
+    const dx = sphere2.position.x - sphere1.position.x;
+    const dy = sphere2.position.y - sphere1.position.y;
+    const dz = sphere2.position.z - sphere1.position.z;
 
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const overlap = sphere1.radius + sphere2.radius - distance;
+
+    const isCollision = overlap > 0;
+
+    if (isCollision) {
+      // Normalized direction vector components
+      const nx = dx / distance;
+      const ny = dy / distance;
+      const nz = dz / distance;
+
+      // Calculate the velocity components along the normalized direction vector
+      const v1i =
+        sphere1.velocity.x * nx +
+        sphere1.velocity.y * ny +
+        sphere1.velocity.z * nz;
+      const v2i =
+        sphere2.velocity.x * nx +
+        sphere2.velocity.y * ny +
+        sphere2.velocity.z * nz;
+
+      // Calculate the final velocities along the collision line using the conservation of momentum and kinetic energy
+      const v1f =
+        (v1i * (sphere1.mass - sphere2.mass) + 2 * sphere2.mass * v2i) /
+        (sphere1.mass + sphere2.mass);
+      const v2f =
+        (v2i * (sphere2.mass - sphere1.mass) + 2 * sphere1.mass * v1i) /
+        (sphere1.mass + sphere2.mass);
+
+      // Update the velocities of the spheres
+      sphere1.velocity.x += (v1f - v1i) * nx;
+      sphere1.velocity.y += (v1f - v1i) * ny;
+      sphere1.velocity.z += (v1f - v1i) * nz;
+
+      sphere2.velocity.x += (v2f - v2i) * nx;
+      sphere2.velocity.y += (v2f - v2i) * ny;
+      sphere2.velocity.z += (v2f - v2i) * nz;
+
+      // Move spheres apart along the line of collision based on their mass
+      const totalMass = sphere1.mass + sphere2.mass;
+      const moveSphere1 = overlap * (sphere2.mass / totalMass);
+      const moveSphere2 = overlap * (sphere1.mass / totalMass);
+
+      sphere1.position.x -= moveSphere1 * nx;
+      sphere1.position.y -= moveSphere1 * ny;
+      sphere1.position.z -= moveSphere1 * nz;
+
+      sphere2.position.x += moveSphere2 * nx;
+      sphere2.position.y += moveSphere2 * ny;
+      sphere2.position.z += moveSphere2 * nz;
+    }
+  }
+
+  function update(dt) {
     updateFps(dt);
 
+    state.gravity = Math.sin(state.now / 1000) - 0.5;
+
     state.spheres.objects.forEach((sphere) => {
-      sphere.updatePosition(dt);
+      sphere.updatePosition(dt, state.gravity);
     });
 
-    // Check for collisions
     for (let i = 0; i < state.spheres.objects.length; i++) {
       for (let j = i + 1; j < state.spheres.objects.length; j++) {
-        detectAndRespondToCollision(
-          state.spheres.objects[i],
-          state.spheres.objects[j]
-        );
+        handleCollisions(state.spheres.objects[i], state.spheres.objects[j]);
       }
     }
 
@@ -402,6 +431,7 @@ export const run = async () => {
       generalFolder.add(state, "halt").listen();
       generalFolder.add(state, "now", 0, 100000, 1).listen();
       generalFolder.addColor(state.colorShift, "colorShift");
+      generalFolder.add(state, "gravity", -100, 100, 0.01).listen();
 
       const cameraFolder = gui.addFolder("Camera");
       cameraFolder.add(state.camera, "fov", -180, 180, 0.1);

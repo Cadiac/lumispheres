@@ -18,7 +18,7 @@ uniform float u_fog_intensity;
 uniform vec3 u_sky_color;
 uniform vec3 u_color_shift;
 
-const int SPHERES_COUNT = 5;
+const int SPHERES_COUNT = 10;
 uniform vec4 u_spheres[SPHERES_COUNT];
 
 struct Material {

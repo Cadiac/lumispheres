@@ -32,12 +32,12 @@ struct Material {
 struct Surface {
   int id;
   float dist;
-  Material material;
 };
 
 struct Ray {
   Surface surface;
   vec3 pos;
+  int steps;
   bool is_hit;
 };
 
@@ -99,7 +99,13 @@ float dot2(in vec2 v) { return dot(v, v); }
 float dot2(in vec3 v) { return dot(v, v); }
 float ndot(in vec2 a, in vec2 b) { return a.x * b.x - a.y * b.y; }
 
-float opUnion(float d1, float d2) { return min(d1, d2); }
+// float opUnion(float d1, float d2) { return min(d1, d2); }
+Surface opUnion(Surface a, Surface b) {
+  if (a.dist < b.dist) {
+    return a;
+  }
+  return b;
+}
 float opSubtraction(float d1, float d2) { return max(-d1, d2); }
 float opIntersection(float d1, float d2) { return max(d1, d2); }
 float opXor(float d1, float d2) { return max(min(d1, d2), -max(d1, d2)); }
@@ -203,53 +209,54 @@ float opExtrusion(in vec3 p, in float sdf, in float h) {
   return min(max(w.x, w.y), 0.0) + length(max(w, 0.0));
 }
 
-float sdWingSegment(in vec2 p) {
-  float t = 3.14 * 0.45;
+// float sdWingSegment(in vec2 p) {
+//   float t = 3.14 * 0.45;
 
-  vec2 q = (p - vec2(0.4, -0.5)) * rotate(2.0 * 3.14 - t);
+//   vec2 q = (p - vec2(0.4, -0.5)) * rotate(2.0 * 3.14 - t);
 
-  float sector = opSubtraction(sdBox(q - vec2(-1.0, 0.5), vec2(1.0, 1.0)),
-                               sdCutDisk(q, 1.0, 0.2));
+//   float sector = opSubtraction(sdBox(q - vec2(-1.0, 0.5), vec2(1.0, 1.0)),
+//                                sdCutDisk(q, 1.0, 0.2));
 
-  float hole1 = sdCircle(q - vec2(0.2, 0.2), 0.2);
-  float hole2 = sdCircle(q - vec2(0.4, 0.2), 0.2);
-  float hole3 = sdCircle(q - vec2(0.6, 0.2), 0.2);
-  float hole4 = sdCircle(q - vec2(0.78, 0.2), 0.2);
+//   float hole1 = sdCircle(q - vec2(0.2, 0.2), 0.2);
+//   float hole2 = sdCircle(q - vec2(0.4, 0.2), 0.2);
+//   float hole3 = sdCircle(q - vec2(0.6, 0.2), 0.2);
+//   float hole4 = sdCircle(q - vec2(0.78, 0.2), 0.2);
 
-  float holes = opUnion(opUnion(hole1, hole2), opUnion(hole3, hole4));
+//   float holes = opUnion(opUnion(hole1, hole2), opUnion(hole3, hole4));
 
-  float d = opUnion(holes, sector);
+//   float d = opUnion(holes, sector);
 
-  return d;
-}
+//   return d;
+// }
 
-float sdWing(in vec2 p) {
-  float bound = sdCircle(p - vec2(1.0, 0.0), 1.0);
-  float dist =
-      opUnion(sdWingSegment(vec2(p.x - 0.5, p.y - 0.2)),
-              sdWingSegment(1.3 * rotate(5.4) * vec2(p.x - 0.3, p.y + 0.35)));
+// float sdWing(in vec2 p) {
+//   float bound = sdCircle(p - vec2(1.0, 0.0), 1.0);
+//   float dist =
+//       opUnion(sdWingSegment(vec2(p.x - 0.5, p.y - 0.2)),
+//               sdWingSegment(1.3 * rotate(5.4) * vec2(p.x - 0.3, p.y +
+//               0.35)));
 
-  return opIntersection(bound, dist);
-}
+//   return opIntersection(bound, dist);
+// }
 
-float sdButterfly(in vec3 p) {
-  vec3 r = p * tRotateZ(3.1415 / 2.0);
+// float sdButterfly(in vec3 p) {
+//   vec3 r = p * tRotateZ(3.1415 / 2.0);
 
-  float t = abs(cos(2.9 * sin(u_time / 600.)));
+//   float t = abs(cos(2.9 * sin(u_time / 600.)));
 
-  vec3 q = r * tRotateY(-3.1415 * t);
-  vec3 qq = r * tRotateY(3.1415 * t);
+//   vec3 q = r * tRotateY(-3.1415 * t);
+//   vec3 qq = r * tRotateY(3.1415 * t);
 
-  float wing1 = opExtrusion(q, sdWing(q.xy), 0.0001);
-  float wing2 = opExtrusion(qq, sdWing(qq.xy), 0.0001);
+//   float wing1 = opExtrusion(q, sdWing(q.xy), 0.0001);
+//   float wing2 = opExtrusion(qq, sdWing(qq.xy), 0.0001);
 
-  float dist =
-      opUnion(opUnion(wing1, wing2),
-              sdVerticalCapsule((r - vec3(0., -0.1, 0.0)) * tRotateZ(-0.1),
-                                0.35, 0.03));
+//   float dist =
+//       opUnion(opUnion(wing1, wing2),
+//               sdVerticalCapsule((r - vec3(0., -0.1, 0.0)) * tRotateZ(-0.1),
+//                                 0.35, 0.03));
 
-  return dist;
-}
+//   return dist;
+// }
 
 float sdPlane(vec3 p, vec3 n, float h) {
   // n must be normalized
@@ -257,19 +264,14 @@ float sdPlane(vec3 p, vec3 n, float h) {
 }
 
 Surface scene(in vec3 p) {
-  float dist = 1e5;
+  Surface surface = Surface(1, sdPlane(p, vec3(0., 1., 0.), 0.0));
 
   for (int i = 0; i < SPHERES_COUNT; ++i) {
-    dist = opUnion(dist, sdSphere(p - u_spheres[i].xyz, u_spheres[i].w));
+    surface = opUnion(
+        surface, Surface(2, sdSphere(p - u_spheres[i].xyz, u_spheres[i].w)));
   }
 
-  dist = opUnion(dist, sdPlane(p, vec3(0., 1., 0.), 0.0));
-
-  vec3 color = vec3(0.43, 0.42, 0.4);
-
-  Material material = Material(color, vec3(0.0), color, 1., 0.0);
-
-  return Surface(1, dist, material);
+  return surface;
 }
 
 vec3 sky(in vec3 camera, in vec3 dir, in vec3 sunDir) {
@@ -313,7 +315,7 @@ float softShadows(in vec3 sunDir, in vec3 p, float k) {
 vec3 lightning(in vec3 lightDir, in vec3 normal, in vec3 p, in vec3 rayDir,
                in float rayDist, Material material, vec3 camera) {
 
-  float shadow = softShadows(lightDir, p, 32.0);
+  float shadow = softShadows(lightDir, p, 16.0);
   float diffuse = clamp(dot(normal, lightDir), 0.0, 1.0);
   float sky_diffuse =
       clamp(0.5 + 0.5 * dot(normal, vec3(0.0, 1.0, 0.0)), 0.0, 1.0);
@@ -321,13 +323,13 @@ vec3 lightning(in vec3 lightDir, in vec3 normal, in vec3 p, in vec3 rayDir,
       clamp(0.2 + 0.2 * dot(normal, vec3(0.0, -1.0, 0.0)), 0.0, 1.0);
 
   vec3 h = normalize(lightDir + normalize((camera - p)));
-  float spec = pow(max(0.0, dot(normal, lightDir)), 128.0);
+  float spec = pow(max(0.0, dot(normal, lightDir)), 1.0);
 
   vec3 light = vec3(0.0);
 
-  light += vec3(7.0, 5.8, 3.6) * diffuse * shadow;
-  light += vec3(0.5, 0.8, 0.6) * sky_diffuse;
-  light += vec3(0.6, 0.3, 0.1) * bounce_diffuse;
+  light += vec3(1.0, 1.0, 1.0) * diffuse * shadow;
+  light += vec3(0.5, 0.6, 0.8) * sky_diffuse;
+  light += vec3(5.6, 0.3, 0.1) * bounce_diffuse;
 
   vec3 color = material.diffuse * light;
 
@@ -351,6 +353,7 @@ Ray rayMarch(in vec3 camera, in vec3 rayDir) {
 
     if (result.surface.dist < stepDist) {
       result.is_hit = true;
+      result.steps = i;
       break;
     }
 
@@ -392,18 +395,23 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir) {
     vec3 lightDir = normalize(
         vec3(3.0 * cos(u_time / 1000.0), 5.0, sin(u_time / 1000.0) * 5.0));
 
-    vec3 light = 1.0 * lightning(lightDir, normal, ray.pos, dir, rayDist,
-                                 ray.surface.material, camera);
+    Material material = Material(vec3(0.43, 0.42, 0.4), vec3(0.0),
+                                 vec3(0.43, 0.42, 0.4), 1., 0.0);
 
-    // vec3 newColor = normalize(ray.surface.material.diffuse + light);
+    vec3 light = 1.0 * lightning(lightDir, normal, ray.pos, dir, rayDist,
+                                 material, camera);
 
     color = mix(color, light, reflection);
+
+    if (ray.surface.id == 2) {
+      color += vec3(0.01 * float(ray.steps));
+    }
 
     // Fog
     vec3 e = exp2(-rayDist * u_fog_intensity * u_color_shift);
     color = color * e + (1. - e) * u_fog_color;
 
-    reflection *= ray.surface.material.reflectivity;
+    reflection *= material.reflectivity;
     if (reflection < EPSILON) {
       break;
     }

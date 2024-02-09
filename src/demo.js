@@ -86,11 +86,11 @@ export const run = async () => {
       z: -18.18,
     },
     fog: {
-      color: [253, 31, 31],
+      color: [78, 250, 230],
       intensity: 0.057,
     },
     sky: {
-      color: [120, 255, 0],
+      color: [29, 240, 253],
     },
     colorShift: {
       colorShift: [255, 235, 255],

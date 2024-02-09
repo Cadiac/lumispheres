@@ -392,8 +392,11 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir) {
                             k.yxy * scene(ray.pos + k.yxy * EPSILON).dist +
                             k.xxx * scene(ray.pos + k.xxx * EPSILON).dist);
 
-    vec3 lightDir = normalize(
-        vec3(3.0 * cos(u_time / 1000.0), 5.0, sin(u_time / 1000.0) * 5.0));
+    vec3 lightDir = sunDir;
+    // vec3 lightDir = normalize(ray.pos - u_spheres[0].xyz);
+
+    // vec3 lightDir = normalize(
+    //     vec3(3.0 * cos(u_time / 1000.0), 5.0, sin(u_time / 1000.0) * 5.0));
 
     Material material = Material(vec3(0.43, 0.42, 0.4), vec3(0.0),
                                  vec3(0.43, 0.42, 0.4), 1., 0.0);
@@ -404,7 +407,10 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir) {
     color = mix(color, light, reflection);
 
     if (ray.surface.id == 2) {
-      color += vec3(0.01 * float(ray.steps));
+      // if (i == 0) {
+      color += vec3(0.0, 0.0, 0.015 * float(ray.steps));
+      // }
+      // material.reflectivity = 0.2;
     }
 
     // Fog

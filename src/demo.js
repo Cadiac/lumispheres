@@ -81,16 +81,16 @@ export const run = async () => {
       },
     },
     sun: {
-      x: 1,
-      y: 5.5,
-      z: 0.5,
+      x: -40.53,
+      y: 1.94,
+      z: -18.18,
     },
     fog: {
-      color: [0, 0, 0],
-      intensity: 0.005,
+      color: [253, 31, 31],
+      intensity: 0.057,
     },
     sky: {
-      color: [0, 0, 0],
+      color: [120, 255, 0],
     },
     colorShift: {
       colorShift: [255, 235, 255],
@@ -101,61 +101,61 @@ export const run = async () => {
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1 + Math.random()
+          2 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1 + Math.random()
+          2 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1 + Math.random()
+          2 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1 + Math.random()
+          2 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1 + Math.random()
+          2 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1 + Math.random()
+          2 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1 + Math.random()
+          2 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1 + Math.random()
+          2 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1 + Math.random()
+          2 + Math.random()
         ),
         new Sphere(
           10 * Math.random(),
           1 + 9 * Math.random(),
           10 * Math.random(),
-          1 + Math.random()
+          2 + Math.random()
         ),
       ],
     },

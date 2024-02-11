@@ -511,7 +511,25 @@ Ray rayMarch(in vec3 camera, in vec3 rayDir) {
   return result;
 }
 
-vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir) {
+float filteredGrid(in vec2 p, in vec2 ddx, in vec2 ddy) {
+  // grid ratio
+  float N = 60.0;
+
+  // filter kernel
+  vec2 w = max(abs(ddx), abs(ddy)) + 0.01;
+
+  // analytic (box) filtering
+  vec2 a = p + 0.5 * w;
+  vec2 b = p - 0.5 * w;
+  vec2 i =
+      (floor(a) + min(fract(a) * N, 1.0) - floor(b) - min(fract(b) * N, 1.0)) /
+      (N * w);
+
+  // pattern
+  return (1.0 - i.x) * (1.0 - i.y);
+}
+
+vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
   vec3 color = vec3(0.0);
   float fresnel = 1.0;
 
@@ -551,15 +569,19 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir) {
     fresnel = clamp(1. + dot(rayDir, normal), 0., 1.);
     fresnel = 0.5 + (0.01 + 0.4 * pow(fresnel, 3.5));
 
-    float seam = min(abs(fract(0.3 * ray.pos.x) - 0.5),
-                     abs(fract(0.3 * ray.pos.z) - 0.5));
+    // Analytically box-filtered grid by Inigo Quilez, MIT License
+    // https://iquilezles.org/articles/filterableprocedurals
+    vec3 ddx_pos =
+        camera - ddxDir * dot(camera - ray.pos, normal) / dot(ddxDir, normal);
+    vec3 ddy_pos =
+        camera - ddyDir * dot(camera - ray.pos, normal) / dot(ddyDir, normal);
+    vec2 ddx_uv = ddx_pos.xz - ray.pos.xz;
+    vec2 ddy_uv = ddy_pos.xz - ray.pos.xz;
 
-    float grid =
-        mix(1.0, (0.4 + 0.5 * smoothstep(0.0, 0.5 / rayDist, seam * 3.)),
-            exp(-0.005 * rayDist));
+    float grid = filteredGrid(0.5 * ray.pos.xz, 0.5 * ddx_uv, 0.5 * ddy_uv);
 
     color *= grid;
-    fresnel *= grid;
+    fresnel *= 0.5 * grid;
 
     camera = ray.pos;
     rayDir = reflect(rayDir, normal);
@@ -585,7 +607,13 @@ void main() {
   mat4 viewToWorld = lookAt(u_camera, u_target, normalize(vec3(0., 1., 0.)));
   vec3 worldDir = (viewToWorld * vec4(viewDir, 0.0)).xyz;
 
-  vec3 color = render(u_camera, worldDir, sunDir);
+  vec3 ddxDir =
+      (viewToWorld * vec4(normalize(vec3(xy + vec2(1.0, 0.0), -z)), 0.0)).xyz;
+
+  vec3 ddyDir =
+      (viewToWorld * vec4(normalize(vec3(xy + vec2(0.0, 1.0), -z)), 0.0)).xyz;
+
+  vec3 color = render(u_camera, worldDir, sunDir, ddxDir, ddyDir);
 
   color = pow(color, u_color_shift);
   color *= vec3(1.02, 0.99, 0.9);

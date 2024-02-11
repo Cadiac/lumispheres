@@ -2,8 +2,8 @@ precision highp float;
 
 const float MAX_DIST = 250.0;
 const float EPSILON = .0001;
-const float PI = 3.14159265;
-const int MAX_ITERATIONS = 400;
+const float PI = 3.14159;
+const int MAX_ITERATIONS = 250;
 
 uniform float u_time;
 uniform float u_fov;
@@ -18,7 +18,7 @@ uniform float u_fog_intensity;
 uniform vec3 u_sky_color;
 uniform vec3 u_color_shift;
 
-const int SPHERES_COUNT = 10;
+const int SPHERES_COUNT = 20;
 uniform vec4 u_spheres[SPHERES_COUNT];
 
 struct Material {
@@ -40,14 +40,6 @@ struct Ray {
   int steps;
   bool is_hit;
 };
-
-mat4 lookAt(vec3 camera, vec3 target, vec3 up) {
-  vec3 f = normalize(target - camera);
-  vec3 s = normalize(cross(up, f));
-  vec3 u = cross(f, s);
-
-  return mat4(vec4(s, .0), vec4(u, .0), vec4(-f, .0), vec4(.0, .0, .0, 1.));
-}
 
 // Noise functions
 float hash1(float n) { return fract(n * 17.0 * fract(n * 0.3183099)); }
@@ -396,24 +388,10 @@ float sphIntersect(in vec3 p, in vec3 rayDir, in vec4 sphere) {
 
 vec3 palette(in float t) {
   return vec3(0.5) +
-         vec3(0.5) * cos(6.28318 * (vec3(1.0) * sin(t + (u_time / 20000.)) +
-                                    vec3(0., 0.33, 0.67)));
-}
-
-vec3 reflections(vec3 p, vec3 rayDir) {
-  float t = 1e20;
-
-  vec3 s = vec3(rayDir.y < 0. ? 1. - sqrt(-rayDir.y / (p.y + 1.))
-                              : 1.); // P.y+1 floor pos
-  for (int i = 0; i < SPHERES_COUNT; i++) {
-    float h = sphIntersect(p, rayDir, u_spheres[i]);
-    if (h > 0.0 && h < t) {
-      vec3 tint = palette(float(i) / float(SPHERES_COUNT));
-      s = tint * 2.;
-      t = h;
-    }
-  }
-  return max(vec3(0.), s);
+         vec3(0.5) *
+             cos(2. * PI *
+                 (vec3(1.0) * (0.4 + 0.2 * sin(10. * t + (u_time / 1000.))) +
+                  vec3(0.0, 0.33, 0.67)));
 }
 
 float sphAreaShadow(vec3 P, vec4 sph1, vec4 sph2) {
@@ -499,16 +477,6 @@ vec3 shade(vec3 p, vec3 rayDir, vec3 normal, int id) {
   // color += (id == SPHERE ? 2.0 : 0.3 + light * 1.3) * sphereLightColor;
   color += 1.0 * light + 1.0 * (id >= SPHERE ? sphereLightColor : vec3(0.0));
 
-  // Reflections
-  if (id == FLOOR) {
-    float fresnel = clamp(1. + dot(rayDir, normal), 0., 1.);
-    fresnel = (0.01 + 0.4 * pow(fresnel, 3.5));
-    vec3 reflection =
-        reflections(p, rayDir - 2. * (dot(rayDir, normal)) * normal);
-
-    color = mix(color, reflection, fresnel);
-  }
-
   return color;
 }
 
@@ -545,62 +513,67 @@ Ray rayMarch(in vec3 camera, in vec3 rayDir) {
 
 vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir) {
   vec3 color = vec3(0.0);
-  float reflection = 1.0;
+  float fresnel = 1.0;
 
   float rayDist = 0.0;
-  Ray ray = rayMarch(camera, rayDir);
 
-  if (!ray.is_hit) {
-    color = mix(color, sky(camera, rayDir, sunDir), reflection);
-    // Add sun glare to sky
-    // (TODO: and the ground plane ?)
-    float glare = clamp(dot(sunDir, rayDir), 0.0, 1.0);
-    color += 0.5 * vec3(1., .5, .2) * pow(glare, 32.0);
-  } else {
+  for (int i = 0; i < 2; i++) {
+    Ray ray = rayMarch(camera, rayDir);
+
+    if (!ray.is_hit) {
+      color = mix(color, sky(camera, rayDir, sunDir), fresnel);
+      float glare = clamp(dot(sunDir, rayDir), 0.0, 1.0);
+      color += 0.5 * vec3(1., .5, .2) * pow(glare, 32.0);
+      break;
+    }
     rayDist += ray.surface.dist;
-
-    // Tetrahedron technique, https://iquilezles.org/articles/normalsSDF/
-    const vec2 k = vec2(1, -1);
 
     vec3 normal = vec3(.0, 1., 0.); // Floor
     if (ray.surface.id >= SPHERE) {
       normal = normalize(ray.pos - currentSphere.xyz);
     }
 
-    // vec3 normal = normalize(k.xyy * scene(ray.pos + k.xyy * EPSILON).dist +
-    //                         k.yyx * scene(ray.pos + k.yyx * EPSILON).dist +
-    //                         k.yxy * scene(ray.pos + k.yxy * EPSILON).dist +
-    //                         k.xxx * scene(ray.pos + k.xxx * EPSILON).dist);
-
-    // vec3 lightDir = sunDir;
-    // vec3 lightDir = normalize(ray.pos - u_spheres[0].xyz);
-
-    // vec3 lightDir = normalize(
-    //     vec3(3.0 * cos(u_time / 1000.0), 5.0, sin(u_time / 1000.0) * 5.0));
-
     Material material = Material(vec3(0.43, 0.42, 0.4), vec3(0.0),
                                  vec3(0.43, 0.42, 0.4), 1., 0.0);
 
-    // vec3 light = 1.0 * lightning(lightDir, normal, ray.pos, dir, rayDist,
-    //                              material, camera);
-
     vec3 light = shade(ray.pos, rayDir, normal, ray.surface.id);
 
-    color = mix(color, light, reflection);
-
-    // if (ray.surface.id == 2) {
-    //   // if (i == 0) {
-    //   color += vec3(0.0, 0.0, 0.015 * float(ray.steps));
-    //   // }
-    //   // material.reflectivity = 0.2;
-    // }
+    color = mix(color, light, fresnel);
 
     // Fog
     vec3 e = exp2(-rayDist * u_fog_intensity * u_color_shift);
     color = color * e + (1. - e) * u_fog_color;
+
+    if (ray.surface.id >= SPHERE) {
+      break;
+    }
+
+    fresnel = clamp(1. + dot(rayDir, normal), 0., 1.);
+    fresnel = 0.5 + (0.01 + 0.4 * pow(fresnel, 3.5));
+
+    float seam = min(abs(fract(0.3 * ray.pos.x) - 0.5),
+                     abs(fract(0.3 * ray.pos.z) - 0.5));
+
+    float grid =
+        mix(1.0, (0.4 + 0.5 * smoothstep(0.0, 0.5 / rayDist, seam * 3.)),
+            exp(-0.005 * rayDist));
+
+    color *= grid;
+    fresnel *= grid;
+
+    camera = ray.pos;
+    rayDir = reflect(rayDir, normal);
   }
 
   return color;
+}
+
+mat4 lookAt(vec3 camera, vec3 target, vec3 up) {
+  vec3 f = normalize(target - camera);
+  vec3 s = normalize(cross(up, f));
+  vec3 u = cross(f, s);
+
+  return mat4(vec4(s, .0), vec4(u, .0), vec4(-f, .0), vec4(.0, .0, .0, 1.));
 }
 
 void main() {

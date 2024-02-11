@@ -86,78 +86,25 @@ export const run = async () => {
       z: -18.18,
     },
     fog: {
-      color: [78, 250, 230],
-      intensity: 0.057,
+      color: [230, 97, 205],
+      intensity: 0.015,
     },
     sky: {
-      color: [29, 240, 253],
+      color: [61, 245, 245],
     },
     colorShift: {
       colorShift: [255, 235, 255],
     },
     spheres: {
-      objects: [
-        new Sphere(
-          10 * Math.random(),
-          1 + 9 * Math.random(),
-          10 * Math.random(),
-          2 + Math.random()
-        ),
-        new Sphere(
-          10 * Math.random(),
-          1 + 9 * Math.random(),
-          10 * Math.random(),
-          2 + Math.random()
-        ),
-        new Sphere(
-          10 * Math.random(),
-          1 + 9 * Math.random(),
-          10 * Math.random(),
-          2 + Math.random()
-        ),
-        new Sphere(
-          10 * Math.random(),
-          1 + 9 * Math.random(),
-          10 * Math.random(),
-          2 + Math.random()
-        ),
-        new Sphere(
-          10 * Math.random(),
-          1 + 9 * Math.random(),
-          10 * Math.random(),
-          2 + Math.random()
-        ),
-        new Sphere(
-          10 * Math.random(),
-          1 + 9 * Math.random(),
-          10 * Math.random(),
-          2 + Math.random()
-        ),
-        new Sphere(
-          10 * Math.random(),
-          1 + 9 * Math.random(),
-          10 * Math.random(),
-          2 + Math.random()
-        ),
-        new Sphere(
-          10 * Math.random(),
-          1 + 9 * Math.random(),
-          10 * Math.random(),
-          2 + Math.random()
-        ),
-        new Sphere(
-          10 * Math.random(),
-          1 + 9 * Math.random(),
-          10 * Math.random(),
-          2 + Math.random()
-        ),
-        new Sphere(
-          10 * Math.random(),
-          1 + 9 * Math.random(),
-          10 * Math.random(),
-          2 + Math.random()
-        ),
-      ],
+      objects: [...Array(20)].map(
+        (o) =>
+          new Sphere(
+            10 * Math.random(),
+            1 + 9 * Math.random(),
+            10 * Math.random(),
+            2 + 2 * Math.random()
+          )
+      ),
     },
   };
 
@@ -440,7 +387,7 @@ export const run = async () => {
         .add(state.camera.position, "x", -100, 100, 0.01)
         .listen();
       cameraPositionFolder
-        .add(state.camera.position, "y", -100, 100, 0.01)
+        .add(state.camera.position, "y", 0.5, 100, 0.01)
         .listen();
       cameraPositionFolder
         .add(state.camera.position, "z", -100, 100, 0.01)

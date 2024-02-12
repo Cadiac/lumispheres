@@ -256,11 +256,23 @@ float sdPlane(vec3 p, vec3 n, float h) {
 }
 
 vec4 currentSphere;
-const int FLOOR = 1;
-const int SPHERE = 2;
+const int FLOOR_BOTTOM = 1;
+const int FLOOR_TOP = 2;
+const int FLOOR_LEFT = 3;
+const int FLOOR_RIGHT = 4;
+const int SPHERE = 5;
 
 Surface scene(in vec3 p) {
-  Surface surface = Surface(FLOOR, sdPlane(p, vec3(0., 1., 0.), 0.0));
+  Surface surface = Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), 0.0));
+
+  surface =
+      opUnion(surface, Surface(FLOOR_TOP, sdPlane(p, vec3(0., -1., 0.), 20.0)));
+
+  surface = opUnion(surface,
+                    Surface(FLOOR_LEFT, sdPlane(p, vec3(-1., 0., 0.), 10.0)));
+
+  surface = opUnion(surface,
+                    Surface(FLOOR_RIGHT, sdPlane(p, vec3(1., 0., 0.), 10.0)));
 
   for (int i = 0; i < SPHERES_COUNT; ++i) {
     Surface sphere =
@@ -546,8 +558,16 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
     }
     rayDist += ray.surface.dist;
 
-    vec3 normal = vec3(.0, 1., 0.); // Floor
-    if (ray.surface.id >= SPHERE) {
+    vec3 normal;
+    if (ray.surface.id == FLOOR_BOTTOM) {
+      normal = vec3(.0, 1., 0.);
+    } else if (ray.surface.id == FLOOR_TOP) {
+      normal = vec3(.0, -1., 0.);
+    } else if (ray.surface.id == FLOOR_LEFT) {
+      normal = vec3(-1., 0., 0.);
+    } else if (ray.surface.id == FLOOR_RIGHT) {
+      normal = vec3(1., 0., 0.);
+    } else if (ray.surface.id >= SPHERE) {
       normal = normalize(ray.pos - currentSphere.xyz);
     }
 
@@ -562,7 +582,8 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
     vec3 e = exp2(-rayDist * u_fog_intensity * u_color_shift);
     color = color * e + (1. - e) * u_fog_color;
 
-    if (ray.surface.id >= SPHERE) {
+    if (ray.surface.id >= SPHERE || ray.surface.id == FLOOR_LEFT ||
+        ray.surface.id == FLOOR_RIGHT) {
       break;
     }
 
@@ -580,8 +601,12 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
 
     float grid = filteredGrid(0.5 * ray.pos.xz, 0.5 * ddx_uv, 0.5 * ddy_uv);
 
-    color *= grid;
+    color *= 1.0 * grid;
     fresnel *= 0.5 * grid;
+
+    if (ray.surface.id == FLOOR_TOP) {
+      break;
+    }
 
     camera = ray.pos;
     rayDir = reflect(rayDir, normal);

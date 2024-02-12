@@ -1,12 +1,16 @@
 import * as dat from "dat.gui";
 
 const boxWidth = 10;
-const boxHeight = 10;
+const boxHeight = 20;
 
 class Sphere {
   constructor(x, y, z, radius) {
     this.position = { x, y, z };
-    this.velocity = { x: 0, y: 0, z: 0 };
+    this.velocity = {
+      x: -0.5 + Math.random(),
+      y: -0.5 + Math.random(),
+      z: -0.5 + Math.random(),
+    };
     this.radius = radius;
     this.mass = (4 / 3) * Math.PI * Math.pow(radius, 3);
   }
@@ -40,7 +44,7 @@ class Sphere {
 
     if (this.position.y + this.radius > boxHeight) {
       this.velocity.y = -this.velocity.y * dampening;
-      this.position.y = boxWidth - this.radius;
+      this.position.y = boxHeight - this.radius;
     }
 
     if (this.position.z - this.radius < -boxWidth) {
@@ -70,20 +74,20 @@ export const run = async () => {
       stop: false,
       fov: 60,
       position: {
-        x: 30,
-        y: 3,
-        z: 15,
+        x: 0,
+        y: 10,
+        z: 60,
       },
       target: {
         x: 0,
-        y: 1,
+        y: 10,
         z: 0,
       },
     },
     sun: {
-      x: -40.53,
-      y: 1.94,
-      z: -18.18,
+      x: -1.23,
+      y: 2,
+      z: -100,
     },
     fog: {
       color: [230, 97, 205],
@@ -99,10 +103,10 @@ export const run = async () => {
       objects: [...Array(20)].map(
         (o) =>
           new Sphere(
-            10 * Math.random(),
-            1 + 9 * Math.random(),
-            10 * Math.random(),
-            2 + 2 * Math.random()
+            -5 + 5 * Math.random(),
+            5 + 5 * Math.random(),
+            5 + 5 * Math.random(),
+            1 + 2 * Math.random()
           )
       ),
     },

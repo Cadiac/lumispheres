@@ -20,7 +20,9 @@ class Sphere {
   }
 
   updatePosition(dt, gravity) {
-    this.velocity.y += gravity * dt;
+    this.velocity.x += gravity.x * dt;
+    this.velocity.y += gravity.y * dt;
+    this.velocity.z += gravity.z * dt;
     this.position.x += this.velocity.x * dt;
     this.position.y += this.velocity.y * dt;
     this.position.z += this.velocity.z * dt;
@@ -69,7 +71,11 @@ export const run = async () => {
       x: 0,
       y: 0,
     },
-    gravity: -0.5,
+    gravity: {
+      x: 0.0,
+      y: -0.5,
+      z: 0.0,
+    },
     camera: {
       stop: false,
       fov: 60,
@@ -208,7 +214,7 @@ export const run = async () => {
   function update(dt) {
     updateFps(dt);
 
-    state.gravity = Math.sin(state.now / 1000) - 0.5;
+    state.gravity.y = Math.sin(state.now / 1000) - 0.5;
 
     state.spheres.objects.forEach((sphere) => {
       sphere.updatePosition(dt, state.gravity);
@@ -382,7 +388,11 @@ export const run = async () => {
       generalFolder.add(state, "halt").listen();
       generalFolder.add(state, "now", 0, 100000, 1).listen();
       generalFolder.addColor(state.colorShift, "colorShift");
-      generalFolder.add(state, "gravity", -100, 100, 0.01).listen();
+
+      const gravityFolder = gui.addFolder("Gravity");
+      gravityFolder.add(state.gravity, "x", -10, 10, 0.01).listen();
+      gravityFolder.add(state.gravity, "y", -10, 10, 0.01).listen();
+      gravityFolder.add(state.gravity, "z", -10, 10, 0.01).listen();
 
       const cameraFolder = gui.addFolder("Camera");
       cameraFolder.add(state.camera, "fov", -180, 180, 0.1);

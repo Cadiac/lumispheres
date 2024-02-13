@@ -476,7 +476,6 @@ vec3 shade(vec3 p, vec3 rayDir, vec3 normal, int id) {
   // take in account the fact that id doesn't start from zero? float light =
   // sphereLight(p, normal, id) * areaShadow(p);
   for (int i = 0; i < SPHERES_COUNT; i++) {
-    // vec3 c = i < 5 ? vec3(0.1, 0.3, 0.5) : vec3(0.9, 0.3, 0.5);
     light += sphereLight(p, normal, u_spheres[i]) *
              palette(float(i) / float(SPHERES_COUNT));
   }

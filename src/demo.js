@@ -40,28 +40,38 @@ class Sphere {
 
     if (this.position.x - this.radius < -boxWidth) {
       this.velocity.x = -this.velocity.x * dampening;
+      this.position.x = -boxWidth + this.radius;
+      this.illumination = 0.99;
     }
 
     if (this.position.x + this.radius > boxWidth) {
       this.velocity.x = -this.velocity.x * dampening;
+      this.position.x = boxWidth - this.radius;
+      this.illumination = 0.99;
     }
 
     if (this.position.y - this.radius < 0) {
       this.velocity.y = -this.velocity.y * dampening;
       this.position.y = this.radius;
+      this.illumination = 0.99;
     }
 
     if (this.position.y + this.radius > boxHeight) {
       this.velocity.y = -this.velocity.y * dampening;
       this.position.y = boxHeight - this.radius;
+      this.illumination = 0.99;
     }
 
     if (this.position.z - this.radius < -boxWidth) {
       this.velocity.z = -this.velocity.z * dampening;
+      this.position.z = -boxWidth + this.radius;
+      this.illumination = 0.99;
     }
 
     if (this.position.z + this.radius > boxWidth) {
       this.velocity.z = -this.velocity.z * dampening;
+      this.position.z = boxWidth - this.radius;
+      this.illumination = 0.99;
     }
   }
 }
@@ -235,16 +245,25 @@ export const run = async () => {
       sphere2.position.x += moveSphere2 * nx;
       sphere2.position.y += moveSphere2 * ny;
       sphere2.position.z += moveSphere2 * nz;
+
+      sphere1.illumination = 0.999;
+      sphere2.illumination = 0.999;
     }
   }
 
   function update(dt) {
     updateFps(dt);
 
-    state.gravity.y = Math.sin(state.now / 1000) - 0.5;
+    // state.gravity.y = Math.sin(state.now / 1000) - 0.5;
 
     state.spheres.objects.forEach((sphere, i) => {
-      sphere.illumination = Math.cos((i * 1000 + state.now) / 1000) / 2 + 0.5;
+      // sphere.illumination = Math.cos((i * 1000 + state.now) / 1000) / 2 + 0.5;
+
+      sphere.illumination = Math.max(
+        0,
+        sphere.illumination - 4 * dt * (1 - sphere.illumination)
+      );
+
       sphere.updatePosition(dt, state.gravity);
     });
 

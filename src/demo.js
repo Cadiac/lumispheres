@@ -11,12 +11,19 @@ class Sphere {
       y: -0.5 + Math.random(),
       z: -0.5 + Math.random(),
     };
+    this.illumination = 0;
     this.radius = radius;
     this.mass = (4 / 3) * Math.PI * Math.pow(radius, 3);
   }
 
   asVec4f() {
-    return [this.position.x, this.position.y, this.position.z, this.radius];
+    return [
+      this.position.x,
+      this.position.y,
+      this.position.z,
+      // w component carries radius in integer part, illumination in fraction part
+      this.radius + this.illumination,
+    ];
   }
 
   updatePosition(dt, gravity) {
@@ -106,15 +113,35 @@ export const run = async () => {
       colorShift: [255, 235, 255],
     },
     spheres: {
-      objects: [...Array(20)].map(
-        (o) =>
-          new Sphere(
-            -5 + 5 * Math.random(),
-            5 + 5 * Math.random(),
-            5 + 5 * Math.random(),
-            1 + 2 * Math.random()
-          )
-      ),
+      objects: [
+        ...[...Array(7)].map(
+          (o) =>
+            new Sphere(
+              -5 + 5 * Math.random(),
+              5 + 5 * Math.random(),
+              5 + 5 * Math.random(),
+              1
+            )
+        ),
+        ...[...Array(8)].map(
+          (o) =>
+            new Sphere(
+              -5 + 5 * Math.random(),
+              5 + 5 * Math.random(),
+              5 + 5 * Math.random(),
+              2
+            )
+        ),
+        ...[...Array(5)].map(
+          (o) =>
+            new Sphere(
+              -5 + 5 * Math.random(),
+              5 + 5 * Math.random(),
+              5 + 5 * Math.random(),
+              3
+            )
+        ),
+      ],
     },
   };
 
@@ -216,7 +243,8 @@ export const run = async () => {
 
     state.gravity.y = Math.sin(state.now / 1000) - 0.5;
 
-    state.spheres.objects.forEach((sphere) => {
+    state.spheres.objects.forEach((sphere, i) => {
+      sphere.illumination = Math.cos((i * 1000 + state.now) / 1000) / 2 + 0.5;
       sphere.updatePosition(dt, state.gravity);
     });
 

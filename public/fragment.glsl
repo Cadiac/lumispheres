@@ -275,8 +275,8 @@ Surface scene(in vec3 p) {
                     Surface(FLOOR_RIGHT, sdPlane(p, vec3(1., 0., 0.), 10.0)));
 
   for (int i = 0; i < SPHERES_COUNT; ++i) {
-    Surface sphere =
-        Surface(SPHERE + i, sdSphere(p - u_spheres[i].xyz, u_spheres[i].w));
+    Surface sphere = Surface(
+        SPHERE + i, sdSphere(p - u_spheres[i].xyz, floor(u_spheres[i].w)));
     if (sphere.dist < surface.dist) {
       surface = sphere;
       currentSphere = u_spheres[i];
@@ -356,11 +356,12 @@ float sphereOcclusion(vec3 p, vec3 normal, vec4 sphere) {
   float d = dot(normal, r);
   float res = d;
 
-  if (d < sphere.w)
-    res =
-        pow(clamp((d + sphere.w) / (2.0 * sphere.w), 0.0, 1.0), 1.5) * sphere.w;
+  float radius = floor(sphere.w);
 
-  return clamp(res * (sphere.w * sphere.w) / (l * l * l), 0.0, 1.0);
+  if (d < radius)
+    res = pow(clamp((d + radius) / (2.0 * radius), 0.0, 1.0), 1.5) * radius;
+
+  return clamp(res * (radius * radius) / (l * l * l), 0.0, 1.0);
 }
 
 float occlusion(vec3 p, vec3 normal) {
@@ -379,16 +380,18 @@ float sphereLight(vec3 p, vec3 normal, vec4 sphere) {
   vec3 dir = occ / dist;
 
   float c = dot(normal, dir);
-  float s = sphere.w / dist;
+  float s = floor(sphere.w) / dist;
+  float i = fract(sphere.w);
 
-  return max(0., c * s);
+  return max(0., c * s * i);
 }
 
 float sphIntersect(in vec3 p, in vec3 rayDir, in vec4 sphere) {
   vec3 rayOriginToSphereCenter = p - sphere.xyz;
+  float radius = floor(sphere.w);
   float b = dot(rayOriginToSphereCenter, rayDir);
-  float c = dot(rayOriginToSphereCenter, rayOriginToSphereCenter) -
-            sphere.w * sphere.w;
+  float c =
+      dot(rayOriginToSphereCenter, rayOriginToSphereCenter) - radius * radius;
   float h = b * b - c;
 
   if (h < 0.0) {
@@ -409,16 +412,16 @@ vec3 palette(in float t) {
 float sphAreaShadow(vec3 P, vec4 sph1, vec4 sph2) {
   vec3 ld = sph2.xyz - P;
   vec3 oc = sph1.xyz - P;
-  float r = sph1.w - 0.00001;
+  float r = floor(sph1.w) - 0.00001;
 
   float d1 = sqrt(dot(ld, ld));
   float d2 = sqrt(dot(oc, oc));
 
-  if (d1 - sph2.w / 2. < d2 - r) {
+  if (d1 - floor(sph2.w) / 2. < d2 - r) {
     return 1.;
   }
 
-  float ls1 = sph2.w / d1;
+  float ls1 = floor(sph2.w) / d1;
   float ls2 = r / d2;
 
   float in1 = sqrt(1.0 - ls1 * ls1);
@@ -436,7 +439,7 @@ float sphAreaShadow(vec3 P, vec4 sph1, vec4 sph2) {
 
   float g = length(cross(v1, v2));
 
-  float th = clamp((in2 - in1 * ilm) * (d1 / sph2.w) / g, -1.0, 1.0);
+  float th = clamp((in2 - in1 * ilm) * (d1 / floor(sph2.w)) / g, -1.0, 1.0);
   float ph = clamp((in1 - in2 * ilm) * (d2 / r) / g, -1.0, 1.0);
 
   float sh =
@@ -461,7 +464,7 @@ float areaShadow(vec3 p) {
 
 vec3 shade(vec3 p, vec3 rayDir, vec3 normal, int id) {
   vec3 base = vec3(0.0); // id >= SPHERE ? vec3(0.6, 0.5, 0.4) : vec3(0.0);
-  vec3 sphereLightColor = palette(float(id) / float(SPHERES_COUNT));
+  vec3 sphereLightColor = palette(float(id - SPHERE) / float(SPHERES_COUNT));
 
   float occ = occlusion(p, normal);
   float occFloor = 1. - sqrt((0.5 + 0.5 * -normal.y) / (p.y + 0.5)) * .5;
@@ -470,7 +473,8 @@ vec3 shade(vec3 p, vec3 rayDir, vec3 normal, int id) {
   // float light = 0.0;
   vec3 light = vec3(0.0);
 
-  // float light = sphereLight(p, normal, id) * areaShadow(p);
+  // take in account the fact that id doesn't start from zero? float light =
+  // sphereLight(p, normal, id) * areaShadow(p);
   for (int i = 0; i < SPHERES_COUNT; i++) {
     // vec3 c = i < 5 ? vec3(0.1, 0.3, 0.5) : vec3(0.9, 0.3, 0.5);
     light += sphereLight(p, normal, u_spheres[i]) *
@@ -487,7 +491,10 @@ vec3 shade(vec3 p, vec3 rayDir, vec3 normal, int id) {
   //          sphereLightColor;
 
   // color += (id == SPHERE ? 2.0 : 0.3 + light * 1.3) * sphereLightColor;
-  color += 1.0 * light + 1.0 * (id >= SPHERE ? sphereLightColor : vec3(0.0));
+  color += 1.0 * light + 1.0 * (id >= SPHERE
+                                    ? sphereLightColor * fract(currentSphere.w)
+                                    : vec3(0.0));
+  // color += 1.0 * light + 1.0 * vec3(0.0);
 
   return color;
 }

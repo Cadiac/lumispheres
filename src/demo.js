@@ -114,7 +114,7 @@ export const run = async () => {
     },
     fog: {
       color: [230, 97, 205],
-      intensity: 0.015,
+      intensity: 0.0,
     },
     sky: {
       color: [61, 245, 245],
@@ -122,27 +122,36 @@ export const run = async () => {
     colorShift: {
       colorShift: [255, 235, 255],
     },
+    palette: {
+      a: [155, 155, 155],
+      b: [174, 74, 74],
+      c: [9, 9, 203],
+      d: [173, 102, 102],
+      offset: 0.0,
+      range: 1.0,
+      period: 10,
+    },
     spheres: {
       objects: [
-        ...[...Array(7)].map(
-          (o) =>
-            new Sphere(
-              -5 + 5 * Math.random(),
-              5 + 5 * Math.random(),
-              5 + 5 * Math.random(),
-              1
-            )
-        ),
-        ...[...Array(8)].map(
-          (o) =>
-            new Sphere(
-              -5 + 5 * Math.random(),
-              5 + 5 * Math.random(),
-              5 + 5 * Math.random(),
-              2
-            )
-        ),
-        ...[...Array(5)].map(
+        // ...[...Array(7)].map(
+        //   (o) =>
+        //     new Sphere(
+        //       -5 + 5 * Math.random(),
+        //       5 + 5 * Math.random(),
+        //       5 + 5 * Math.random(),
+        //       1
+        //     )
+        // ),
+        // ...[...Array(8)].map(
+        //   (o) =>
+        //     new Sphere(
+        //       -5 + 5 * Math.random(),
+        //       5 + 5 * Math.random(),
+        //       5 + 5 * Math.random(),
+        //       2
+        //     )
+        // ),
+        ...[...Array(10)].map(
           (o) =>
             new Sphere(
               -5 + 5 * Math.random(),
@@ -255,13 +264,15 @@ export const run = async () => {
     updateFps(dt);
 
     // state.gravity.y = Math.sin(state.now / 1000) - 0.5;
+    // state.gravity.x = -Math.sin(state.now / 10000);
+    // state.gravity.y = -Math.cos(state.now / 10000);
 
     state.spheres.objects.forEach((sphere, i) => {
       // sphere.illumination = Math.cos((i * 1000 + state.now) / 1000) / 2 + 0.5;
 
       sphere.illumination = Math.max(
         0,
-        sphere.illumination - 4 * dt * (1 - sphere.illumination)
+        sphere.illumination - 3 * dt * (1 - sphere.illumination)
       );
 
       sphere.updatePosition(dt, state.gravity);
@@ -370,6 +381,43 @@ export const run = async () => {
         state.spheres.objects.flatMap((sphere) => sphere.asVec4f())
       );
 
+      gl.uniform3f(
+        gl.getUniformLocation(program, "u_palette_a"),
+        state.palette.a[0] / 255,
+        state.palette.a[1] / 255,
+        state.palette.a[2] / 255
+      );
+      gl.uniform3f(
+        gl.getUniformLocation(program, "u_palette_b"),
+        state.palette.b[0] / 255,
+        state.palette.b[1] / 255,
+        state.palette.b[2] / 255
+      );
+      gl.uniform3f(
+        gl.getUniformLocation(program, "u_palette_c"),
+        state.palette.c[0] / 255,
+        state.palette.c[1] / 255,
+        state.palette.c[2] / 255
+      );
+      gl.uniform3f(
+        gl.getUniformLocation(program, "u_palette_d"),
+        state.palette.d[0] / 255,
+        state.palette.d[1] / 255,
+        state.palette.d[2] / 255
+      );
+      gl.uniform1f(
+        gl.getUniformLocation(program, "u_palette_offset"),
+        state.palette.offset
+      );
+      gl.uniform1f(
+        gl.getUniformLocation(program, "u_palette_range"),
+        state.palette.range
+      );
+      gl.uniform1f(
+        gl.getUniformLocation(program, "u_palette_period"),
+        state.palette.period
+      );
+
       // Draw to frame buffer texture
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -463,6 +511,15 @@ export const run = async () => {
       cameraTargetFolder
         .add(state.camera.target, "z", -100, 100, 0.01)
         .listen();
+
+      const paletteFolder = gui.addFolder("Palette");
+      paletteFolder.addColor(state.palette, "a");
+      paletteFolder.addColor(state.palette, "b");
+      paletteFolder.addColor(state.palette, "c");
+      paletteFolder.addColor(state.palette, "d");
+      paletteFolder.add(state.palette, "offset", 0.0, 1.0, 0.05);
+      paletteFolder.add(state.palette, "range", 0.0, 1.0, 0.05);
+      paletteFolder.add(state.palette, "period", 0.0, 100, 0.1);
 
       const skyFolder = gui.addFolder("Sky");
       skyFolder.addColor(state.sky, "color");

@@ -1,6 +1,6 @@
 precision highp float;
 
-const float MAX_DIST = 250.0;
+const float MAX_DIST = 200.0;
 const float EPSILON = .0001;
 const float PI = 3.14159;
 const int MAX_ITERATIONS = 250;
@@ -18,7 +18,15 @@ uniform float u_fog_intensity;
 uniform vec3 u_sky_color;
 uniform vec3 u_color_shift;
 
-const int SPHERES_COUNT = 20;
+uniform vec3 u_palette_a;
+uniform vec3 u_palette_b;
+uniform vec3 u_palette_c;
+uniform vec3 u_palette_d;
+uniform float u_palette_offset;
+uniform float u_palette_range;
+uniform float u_palette_period;
+
+const int SPHERES_COUNT = 10;
 uniform vec4 u_spheres[SPHERES_COUNT];
 
 struct Material {
@@ -402,11 +410,19 @@ float sphIntersect(in vec3 p, in vec3 rayDir, in vec4 sphere) {
 }
 
 vec3 palette(in float t) {
-  return vec3(0.5) +
-         vec3(0.5) *
+  // return vec3(0.5) +
+  //        vec3(0.5) *
+  //            cos(2. * PI *
+  //                (vec3(1.0) * (-0.3 + 0.4 * sin(10. * t + (u_time / 1000.)))
+  //                +
+  //                 vec3(0.0, 0.33, 0.67)));
+  return u_palette_a +
+         u_palette_b *
              cos(2. * PI *
-                 (vec3(1.0) * (0.4 + 0.2 * sin(10. * t + (u_time / 1000.))) +
-                  vec3(0.0, 0.33, 0.67)));
+                 (u_palette_c * (u_palette_offset +
+                                 u_palette_range * sin(u_palette_period * t +
+                                                       (u_time / 1000.))) +
+                  u_palette_d));
 }
 
 float sphAreaShadow(vec3 P, vec4 sph1, vec4 sph2) {
@@ -463,17 +479,16 @@ float areaShadow(vec3 p) {
 }
 
 vec3 shade(vec3 p, vec3 rayDir, vec3 normal, int id) {
-  vec3 base = vec3(0.0); // id >= SPHERE ? vec3(0.6, 0.5, 0.4) : vec3(0.0);
+  // vec3 base = id >= SPHERE ? vec3(0.6, 0.5, 0.4) : vec3(1.0);
+  vec3 base = vec3(1.0);
   vec3 sphereLightColor = palette(float(id - SPHERE) / float(SPHERES_COUNT));
 
   float occ = occlusion(p, normal);
   float occFloor = 1. - sqrt((0.5 + 0.5 * -normal.y) / (p.y + 0.5)) * .5;
 
   // float light = areaShadow(p);
-  // float light = 0.0;
   vec3 light = vec3(0.0);
 
-  // take in account the fact that id doesn't start from zero? float light =
   // sphereLight(p, normal, id) * areaShadow(p);
   for (int i = 0; i < SPHERES_COUNT; i++) {
     light += sphereLight(p, normal, u_spheres[i]) *
@@ -482,18 +497,11 @@ vec3 shade(vec3 p, vec3 rayDir, vec3 normal, int id) {
 
   // light *= areaShadow(p);
 
-  // Env light
   vec3 color = base * occ * occFloor * 0.4;
 
-  // Sphere light
-  // color += (id == SPHERE ? 2.0 : 0.0 + light * (id == SPHERE ? 1.3 : 0.5)) *
-  //          sphereLightColor;
-
-  // color += (id == SPHERE ? 2.0 : 0.3 + light * 1.3) * sphereLightColor;
   color += 1.0 * light + 1.0 * (id >= SPHERE
                                     ? sphereLightColor * fract(currentSphere.w)
                                     : vec3(0.0));
-  // color += 1.0 * light + 1.0 * vec3(0.0);
 
   return color;
 }
@@ -610,9 +618,9 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
     color *= 1.0 * grid;
     fresnel *= 0.5 * grid;
 
-    if (ray.surface.id == FLOOR_TOP) {
-      break;
-    }
+    // if (ray.surface.id == FLOOR_TOP) {
+    //   break;
+    // }
 
     camera = ray.pos;
     rayDir = reflect(rayDir, normal);
@@ -636,6 +644,10 @@ void main() {
 
   vec3 sunDir = normalize(u_sun);
   mat4 viewToWorld = lookAt(u_camera, u_target, normalize(vec3(0., 1., 0.)));
+  // mat4 viewToWorld =
+  //     lookAt(u_camera, u_target,
+  //            normalize(vec3(sin(u_time / 10000.), cos(u_time / 10000.),
+  //            0.)));
   vec3 worldDir = (viewToWorld * vec4(viewDir, 0.0)).xyz;
 
   vec3 ddxDir =

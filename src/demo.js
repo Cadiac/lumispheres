@@ -68,11 +68,11 @@ class Sphere {
       this.illumination = 0.99;
     }
 
-    if (this.position.z + this.radius > boxWidth) {
-      this.velocity.z = -this.velocity.z * dampening;
-      this.position.z = boxWidth - this.radius;
-      this.illumination = 0.99;
-    }
+    // if (this.position.z + this.radius > boxWidth) {
+    //   this.velocity.z = -this.velocity.z * dampening;
+    //   this.position.z = boxWidth - this.radius;
+    //   this.illumination = 0.99;
+    // }
   }
 }
 
@@ -133,24 +133,24 @@ export const run = async () => {
     },
     spheres: {
       objects: [
-        // ...[...Array(7)].map(
-        //   (o) =>
-        //     new Sphere(
-        //       -5 + 5 * Math.random(),
-        //       5 + 5 * Math.random(),
-        //       5 + 5 * Math.random(),
-        //       1
-        //     )
-        // ),
-        // ...[...Array(8)].map(
-        //   (o) =>
-        //     new Sphere(
-        //       -5 + 5 * Math.random(),
-        //       5 + 5 * Math.random(),
-        //       5 + 5 * Math.random(),
-        //       2
-        //     )
-        // ),
+        ...[...Array(5)].map(
+          (o) =>
+            new Sphere(
+              -5 + 5 * Math.random(),
+              5 + 5 * Math.random(),
+              5 + 5 * Math.random(),
+              1
+            )
+        ),
+        ...[...Array(5)].map(
+          (o) =>
+            new Sphere(
+              -5 + 5 * Math.random(),
+              5 + 5 * Math.random(),
+              5 + 5 * Math.random(),
+              2
+            )
+        ),
         ...[...Array(10)].map(
           (o) =>
             new Sphere(

@@ -3,7 +3,7 @@ precision highp float;
 const float MAX_DIST = 200.0;
 const float EPSILON = .0001;
 const float PI = 3.14159;
-const int MAX_ITERATIONS = 250;
+const int MAX_ITERATIONS = 500;
 
 uniform float u_time;
 uniform float u_fov;
@@ -66,21 +66,17 @@ const int SPHERE = 6;
 Surface scene(in vec3 p) {
   Surface surface = Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), 0.0));
 
-  // surface =
-  //     opUnion(surface, Surface(FLOOR_TOP, sdPlane(p, vec3(0., -1.,
-  //     0.), 20.0)));
+  surface =
+      opUnion(surface, Surface(FLOOR_TOP, sdPlane(p, vec3(0., -1., 0.), 20.0)));
 
-  // surface = opUnion(surface,
-  //                   Surface(FLOOR_LEFT, sdPlane(p, vec3(-1., 0.,
-  //                   0.), 10.0)));
+  surface = opUnion(surface,
+                    Surface(FLOOR_LEFT, sdPlane(p, vec3(-1., 0., 0.), 10.0)));
 
-  // surface = opUnion(surface,
-  //                   Surface(FLOOR_RIGHT, sdPlane(p, vec3(1., 0.,
-  //                   0.), 10.0)));
+  surface = opUnion(surface,
+                    Surface(FLOOR_RIGHT, sdPlane(p, vec3(1., 0., 0.), 10.0)));
 
-  // surface =
-  //     opUnion(surface, Surface(FLOOR_BACK, sdPlane(p, vec3(0.,
-  //     0., 1.), 10.0)));
+  surface =
+      opUnion(surface, Surface(FLOOR_BACK, sdPlane(p, vec3(0., 0., 1.), 10.0)));
 
   for (int i = 0; i < SPHERES_COUNT; ++i) {
     Surface sphere = Surface(
@@ -111,26 +107,6 @@ vec3 sky(in vec3 camera, in vec3 dir, in vec3 sunDir) {
   }
 
   return color;
-}
-
-float softShadows(in vec3 sunDir, in vec3 p, float k) {
-  float opacity = 1.;
-  float depth = 0.;
-
-  for (int s = 0; s < MAX_ITERATIONS; ++s) {
-    if (depth >= MAX_DIST) {
-      return opacity;
-    }
-
-    Surface surface = scene(p + depth * sunDir);
-    if (surface.dist < EPSILON) {
-      return 0.;
-    }
-    opacity = min(opacity, k * surface.dist / depth);
-    depth += surface.dist;
-  }
-
-  return opacity;
 }
 
 float sphereOcclusion(vec3 p, vec3 normal, vec4 sphere) {
@@ -243,7 +219,7 @@ Ray rayMarch(in vec3 camera, in vec3 rayDir) {
       break;
     }
 
-    depth += result.surface.dist * 0.5;
+    depth += result.surface.dist;
 
     if (depth >= MAX_DIST) {
       break;

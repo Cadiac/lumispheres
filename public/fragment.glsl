@@ -29,14 +29,6 @@ uniform float u_palette_period;
 const int SPHERES_COUNT = 20;
 uniform vec4 u_spheres[SPHERES_COUNT];
 
-struct Material {
-  vec3 diffuse;
-  vec3 ambient;
-  vec3 specular;
-  float hardness;
-  float reflectivity;
-};
-
 struct Surface {
   int id;
   float dist;
@@ -74,17 +66,21 @@ const int SPHERE = 6;
 Surface scene(in vec3 p) {
   Surface surface = Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), 0.0));
 
-  surface =
-      opUnion(surface, Surface(FLOOR_TOP, sdPlane(p, vec3(0., -1., 0.), 20.0)));
+  // surface =
+  //     opUnion(surface, Surface(FLOOR_TOP, sdPlane(p, vec3(0., -1.,
+  //     0.), 20.0)));
 
-  surface = opUnion(surface,
-                    Surface(FLOOR_LEFT, sdPlane(p, vec3(-1., 0., 0.), 10.0)));
+  // surface = opUnion(surface,
+  //                   Surface(FLOOR_LEFT, sdPlane(p, vec3(-1., 0.,
+  //                   0.), 10.0)));
 
-  surface = opUnion(surface,
-                    Surface(FLOOR_RIGHT, sdPlane(p, vec3(1., 0., 0.), 10.0)));
+  // surface = opUnion(surface,
+  //                   Surface(FLOOR_RIGHT, sdPlane(p, vec3(1., 0.,
+  //                   0.), 10.0)));
 
-  surface =
-      opUnion(surface, Surface(FLOOR_BACK, sdPlane(p, vec3(0., 0., 1.), 10.0)));
+  // surface =
+  //     opUnion(surface, Surface(FLOOR_BACK, sdPlane(p, vec3(0.,
+  //     0., 1.), 10.0)));
 
   for (int i = 0; i < SPHERES_COUNT; ++i) {
     Surface sphere = Surface(
@@ -283,7 +279,7 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
 
   float rayDist = 0.0;
 
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 5; i++) {
     Ray ray = rayMarch(camera, rayDir);
 
     if (!ray.is_hit) {
@@ -309,19 +305,16 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
       normal = normalize(ray.pos - currentSphere.xyz);
     }
 
-    Material material = Material(vec3(0.43, 0.42, 0.4), vec3(0.0),
-                                 vec3(0.43, 0.42, 0.4), 1., 0.0);
-
     vec3 light = shade(ray.pos, rayDir, normal, ray.surface.id);
 
     color = mix(color, light, fresnel);
 
     // Fog
-    vec3 e = exp2(-rayDist * u_fog_intensity * u_color_shift);
-    color = color * e + (1. - e) * u_fog_color;
+    vec3 fog = exp2(-rayDist * u_fog_intensity * u_color_shift);
 
     if (ray.surface.id >= SPHERE || ray.surface.id == FLOOR_LEFT ||
         ray.surface.id == FLOOR_RIGHT || ray.surface.id == FLOOR_BACK) {
+      color = color * fog + (1. - fog) * u_fog_color;
       break;
     }
 
@@ -339,8 +332,9 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
 
     float grid = filteredGrid(0.5 * ray.pos.xz, 0.5 * ddx_uv, 0.5 * ddy_uv);
 
-    color *= 1.0 * grid;
     fresnel *= 0.5 * grid;
+    color *= 1.0 * grid;
+    color = color * fog + (1. - fog) * u_fog_color;
 
     // if (ray.surface.id == FLOOR_TOP) {
     //   break;

@@ -114,7 +114,7 @@ export const run = async () => {
     },
     fog: {
       color: [230, 97, 205],
-      intensity: 0.0,
+      intensity: 0.005,
     },
     sky: {
       color: [61, 245, 245],

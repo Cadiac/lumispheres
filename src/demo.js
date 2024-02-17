@@ -272,7 +272,6 @@ export const run = async (audioCtx, analyser) => {
 
     analyser.getByteFrequencyData(fftDataArray);
     state.audio.beat = fftDataArray[state.audio.offset];
-    console.log(fftDataArray.length);
 
     // state.gravity.y = Math.sin(state.now / 1000) - 0.5;
     // state.gravity.x = -Math.sin(state.now / 10000);
@@ -340,6 +339,7 @@ export const run = async (audioCtx, analyser) => {
       gl.useProgram(program);
 
       gl.uniform1f(gl.getUniformLocation(program, "u_time"), state.now);
+      gl.uniform1f(gl.getUniformLocation(program, "u_beat"), state.audio.beat);
       gl.uniform2f(
         gl.getUniformLocation(program, "u_resolution"),
         state.resolution.x,

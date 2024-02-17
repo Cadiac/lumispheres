@@ -6,6 +6,7 @@ const float PI = 3.14159;
 const int MAX_ITERATIONS = 500;
 
 uniform float u_time;
+uniform float u_beat;
 uniform float u_fov;
 uniform vec2 u_resolution;
 

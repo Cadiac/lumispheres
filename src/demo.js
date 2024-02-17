@@ -76,7 +76,7 @@ class Sphere {
   }
 }
 
-export const run = async () => {
+export const run = async (audioCtx, analyser) => {
   let state = {
     halt: false,
     epoch: performance.now(),
@@ -162,6 +162,10 @@ export const run = async () => {
         ),
       ],
     },
+    audio: {
+      offset: 22,
+      beat: 0,
+    },
   };
 
   document.addEventListener(
@@ -176,6 +180,9 @@ export const run = async () => {
     },
     true
   );
+
+  analyser.fftSize = 256;
+  const fftDataArray = new Uint8Array(analyser.frequencyBinCount);
 
   const vertexShader = `attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`;
   const fragmentShader = await fetch("/fragment.glsl").then((res) =>
@@ -262,6 +269,10 @@ export const run = async () => {
 
   function update(dt) {
     updateFps(dt);
+
+    analyser.getByteFrequencyData(fftDataArray);
+    state.audio.beat = fftDataArray[state.audio.offset];
+    console.log(fftDataArray.length);
 
     // state.gravity.y = Math.sin(state.now / 1000) - 0.5;
     // state.gravity.x = -Math.sin(state.now / 10000);
@@ -533,7 +544,9 @@ export const run = async () => {
       sunFolder.add(state.sun, "y", -100, 100, 0.01).listen();
       sunFolder.add(state.sun, "z", -100, 100, 0.01).listen();
 
-      const dragonFolder = gui.addFolder("Spheres");
+      const beatFolder = gui.addFolder("Audio");
+      beatFolder.add(state.audio, "beat", 0.0, 255, 1).listen();
+      beatFolder.add(state.audio, "offset", 0, 127, 1).listen();
 
       window.requestAnimationFrame(render);
     } catch (err) {

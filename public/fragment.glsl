@@ -49,6 +49,31 @@ Surface opUnion(Surface a, Surface b) {
   return b;
 }
 
+float dot2(vec3 v) { return dot(v, v); }
+
+float udQuad(vec3 p, vec3 a, vec3 b, vec3 c, vec3 d) {
+  vec3 ba = b - a;
+  vec3 pa = p - a;
+  vec3 cb = c - b;
+  vec3 pb = p - b;
+  vec3 dc = d - c;
+  vec3 pc = p - c;
+  vec3 ad = a - d;
+  vec3 pd = p - d;
+  vec3 nor = cross(ba, ad);
+
+  return sqrt(
+      (sign(dot(cross(ba, nor), pa)) + sign(dot(cross(cb, nor), pb)) +
+           sign(dot(cross(dc, nor), pc)) + sign(dot(cross(ad, nor), pd)) <
+       3.0)
+          ? min(min(min(dot2(ba * clamp(dot(ba, pa) / dot2(ba), 0.0, 1.0) - pa),
+                        dot2(cb * clamp(dot(cb, pb) / dot2(cb), 0.0, 1.0) -
+                             pb)),
+                    dot2(dc * clamp(dot(dc, pc) / dot2(dc), 0.0, 1.0) - pc)),
+                dot2(ad * clamp(dot(ad, pd) / dot2(ad), 0.0, 1.0) - pd))
+          : dot(nor, pa) * dot(nor, pa) / dot2(nor));
+}
+
 float sdSphere(vec3 p, float s) { return length(p) - s; }
 
 float sdPlane(vec3 p, vec3 n, float h) {
@@ -62,22 +87,56 @@ const int FLOOR_TOP = 2;
 const int FLOOR_LEFT = 3;
 const int FLOOR_RIGHT = 4;
 const int FLOOR_BACK = 5;
-const int SPHERE = 6;
+const int FLOOR_FRONT = 6;
+const int SPHERE = 7;
 
 Surface scene(in vec3 p) {
-  Surface surface = Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), 0.0));
+  Surface surface =
+      Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), u_beat / 255.));
 
-  surface =
-      opUnion(surface, Surface(FLOOR_TOP, sdPlane(p, vec3(0., -1., 0.), 20.0)));
+  surface = opUnion(
+      surface,
+      Surface(FLOOR_BACK, udQuad(p, vec3(10., 0., -10.), vec3(10., 20., -10.),
+                                 vec3(-10., 20., -10.), vec3(-10., 0., -10.))));
 
-  surface = opUnion(surface,
-                    Surface(FLOOR_LEFT, sdPlane(p, vec3(-1., 0., 0.), 10.0)));
+  surface = opUnion(
+      surface,
+      Surface(FLOOR_LEFT, udQuad(p, vec3(10., 0., 10.), vec3(10., 0., -10.),
+                                 vec3(10., 20., -10.), vec3(10., 20., 10.))));
 
-  surface = opUnion(surface,
-                    Surface(FLOOR_RIGHT, sdPlane(p, vec3(1., 0., 0.), 10.0)));
+  surface = opUnion(
+      surface, Surface(FLOOR_RIGHT,
+                       udQuad(p, vec3(-10., 0., 10.), vec3(-10., 0., -10.),
+                              vec3(-10., 20., -10.), vec3(-10., 20., 10.))));
 
-  surface =
-      opUnion(surface, Surface(FLOOR_BACK, sdPlane(p, vec3(0., 0., 1.), 10.0)));
+  surface = opUnion(
+      surface,
+      Surface(FLOOR_TOP, udQuad(p, vec3(10., 20., 10.), vec3(-10., 20., 10.),
+                                vec3(-10., 20., -10.), vec3(10., 20., -10.))));
+
+  surface = opUnion(
+      surface,
+      Surface(FLOOR_FRONT, udQuad(p, vec3(10., 0., 10.), vec3(10., 20., 10.),
+                                  vec3(-10., 20., 10.), vec3(-10., 0., 10.))));
+
+  // surface = opUnion(surface, Surface(FLOOR_TOP, udQuad(p.xz, vec2(-10, 0),
+  //                                                      vec2(10, 20), p.y)));
+
+  // surface =
+  //     opUnion(surface, Surface(FLOOR_TOP, sdPlane(p, vec3(0., -1.,
+  //     0.), 20.0)));
+
+  // surface = opUnion(surface,
+  //                   Surface(FLOOR_LEFT, sdPlane(p, vec3(-1., 0.,
+  //                   0.), 10.0)));
+
+  // surface = opUnion(surface,
+  //                   Surface(FLOOR_RIGHT, sdPlane(p, vec3(1., 0.,
+  //                   0.), 10.0)));
+
+  // surface =
+  //     opUnion(surface, Surface(FLOOR_BACK, sdPlane(p, vec3(0.,
+  //     0., 1.), 10.0)));
 
   for (int i = 0; i < SPHERES_COUNT; ++i) {
     Surface sphere = Surface(
@@ -250,10 +309,28 @@ float filteredGrid(in vec2 p, in vec2 ddx, in vec2 ddy) {
   return (1.0 - i.x) * (1.0 - i.y);
 }
 
-vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
+mat4 lookAt(vec3 camera, vec3 target, vec3 up) {
+  vec3 f = normalize(target - camera);
+  vec3 s = normalize(cross(up, f));
+  vec3 u = cross(f, s);
+
+  return mat4(vec4(s, .0), vec4(u, .0), vec4(-f, .0), vec4(.0, .0, .0, 1.));
+}
+
+vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
+  mat4 viewToWorld = lookAt(camera, target, normalize(vec3(0., 1., 0.)));
+
+  vec3 viewDir = normalize(vec3(xy, -z));
+  vec3 rayDir = (viewToWorld * vec4(viewDir, 0.0)).xyz;
+
+  vec3 ddxDir =
+      (viewToWorld * vec4(normalize(vec3(xy + vec2(1.0, 0.0), -z)), 0.0)).xyz;
+
+  vec3 ddyDir =
+      (viewToWorld * vec4(normalize(vec3(xy + vec2(0.0, 1.0), -z)), 0.0)).xyz;
+
   vec3 color = vec3(0.0);
   float fresnel = 1.0;
-
   float rayDist = 0.0;
 
   for (int i = 0; i < 5; i++) {
@@ -278,6 +355,8 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
       normal = vec3(1., 0., 0.);
     } else if (ray.surface.id == FLOOR_BACK) {
       normal = vec3(0., 0., 1.);
+    } else if (ray.surface.id == FLOOR_FRONT) {
+      normal = vec3(0., 0., -1.);
     } else if (ray.surface.id >= SPHERE) {
       normal = normalize(ray.pos - currentSphere.xyz);
     }
@@ -290,7 +369,8 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
     vec3 fog = exp2(-rayDist * u_fog_intensity * u_color_shift);
 
     if (ray.surface.id >= SPHERE || ray.surface.id == FLOOR_LEFT ||
-        ray.surface.id == FLOOR_RIGHT || ray.surface.id == FLOOR_BACK) {
+        ray.surface.id == FLOOR_RIGHT || ray.surface.id == FLOOR_BACK ||
+        ray.surface.id == FLOOR_TOP || ray.surface.id == FLOOR_FRONT) {
       color = color * fog + (1. - fog) * u_fog_color;
       break;
     }
@@ -311,11 +391,8 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
 
     fresnel *= 0.5 * grid;
     color *= 1.0 * grid;
-    color = color * fog + (1. - fog) * u_fog_color;
 
-    // if (ray.surface.id == FLOOR_TOP) {
-    //   break;
-    // }
+    color = color * fog + (1. - fog) * u_fog_color;
 
     camera = ray.pos;
     rayDir = reflect(rayDir, normal);
@@ -324,34 +401,18 @@ vec3 render(vec3 camera, vec3 rayDir, vec3 sunDir, vec3 ddxDir, vec3 ddyDir) {
   return color;
 }
 
-mat4 lookAt(vec3 camera, vec3 target, vec3 up) {
-  vec3 f = normalize(target - camera);
-  vec3 s = normalize(cross(up, f));
-  vec3 u = cross(f, s);
-
-  return mat4(vec4(s, .0), vec4(u, .0), vec4(-f, .0), vec4(.0, .0, .0, 1.));
-}
-
 void main() {
   vec2 xy = gl_FragCoord.xy - u_resolution / 2.0;
   float z = u_resolution.y / tan(radians(u_fov) / 2.0);
-  vec3 viewDir = normalize(vec3(xy, -z));
 
   vec3 sunDir = normalize(u_sun);
-  mat4 viewToWorld = lookAt(u_camera, u_target, normalize(vec3(0., 1., 0.)));
+
   // mat4 viewToWorld =
   //     lookAt(u_camera, u_target,
   //            normalize(vec3(sin(u_time / 10000.), cos(u_time / 10000.),
   //            0.)));
-  vec3 worldDir = (viewToWorld * vec4(viewDir, 0.0)).xyz;
 
-  vec3 ddxDir =
-      (viewToWorld * vec4(normalize(vec3(xy + vec2(1.0, 0.0), -z)), 0.0)).xyz;
-
-  vec3 ddyDir =
-      (viewToWorld * vec4(normalize(vec3(xy + vec2(0.0, 1.0), -z)), 0.0)).xyz;
-
-  vec3 color = render(u_camera, worldDir, sunDir, ddxDir, ddyDir);
+  vec3 color = render(u_camera, u_target, sunDir, xy, z);
 
   color = pow(color, u_color_shift);
   color *= vec3(1.02, 0.99, 0.9);

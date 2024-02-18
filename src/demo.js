@@ -35,7 +35,7 @@ class Sphere {
     this.position.z += this.velocity.z * dt;
   }
 
-  checkWallCollision(boxWidth, boxHeight) {
+  checkWallCollision(boxWidth, boxHeight, beat, delta) {
     const dampening = 0.8;
 
     if (this.position.x - this.radius < -boxWidth) {
@@ -50,9 +50,9 @@ class Sphere {
       this.illumination = 0.99;
     }
 
-    if (this.position.y - this.radius < 0) {
-      this.velocity.y = -this.velocity.y * dampening;
-      this.position.y = this.radius;
+    if (this.position.y - this.radius < beat / -255) {
+      this.velocity.y = -this.velocity.y * dampening + delta * 0.5;
+      this.position.y = this.radius - beat / 255;
       this.illumination = 0.99;
     }
 
@@ -165,6 +165,7 @@ export const run = async (audioCtx, analyser) => {
     audio: {
       offset: 22,
       beat: 0,
+      delta: 0,
     },
   };
 
@@ -271,6 +272,7 @@ export const run = async (audioCtx, analyser) => {
     updateFps(dt);
 
     analyser.getByteFrequencyData(fftDataArray);
+    state.audio.delta = fftDataArray[state.audio.offset] - state.audio.beat;
     state.audio.beat = fftDataArray[state.audio.offset];
 
     // state.gravity.y = Math.sin(state.now / 1000) - 0.5;
@@ -295,7 +297,12 @@ export const run = async (audioCtx, analyser) => {
     }
 
     state.spheres.objects.forEach((sphere) => {
-      sphere.checkWallCollision(boxWidth, boxHeight);
+      sphere.checkWallCollision(
+        boxWidth,
+        boxHeight,
+        state.audio.beat,
+        state.audio.delta
+      );
     });
   }
 
@@ -547,6 +554,7 @@ export const run = async (audioCtx, analyser) => {
       const beatFolder = gui.addFolder("Audio");
       beatFolder.add(state.audio, "beat", 0.0, 255, 1).listen();
       beatFolder.add(state.audio, "offset", 0, 127, 1).listen();
+      beatFolder.add(state.audio, "delta", -128, 128, 1).listen();
 
       window.requestAnimationFrame(render);
     } catch (err) {

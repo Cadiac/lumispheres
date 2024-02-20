@@ -35,7 +35,7 @@ class Sphere {
     this.position.z += this.velocity.z * dt;
   }
 
-  checkWallCollision(boxWidth, boxHeight, beat, delta) {
+  checkWallCollision(boxWidth, boxHeight, y) {
     const dampening = 0.8;
 
     if (this.position.x - this.radius < -boxWidth) {
@@ -50,15 +50,15 @@ class Sphere {
       this.illumination = 0.99;
     }
 
-    if (this.position.y - this.radius < beat / -255) {
-      this.velocity.y = -this.velocity.y * dampening + delta * 0.5;
-      this.position.y = this.radius - beat / 255;
+    if (this.position.y - this.radius < y) {
+      this.velocity.y = -this.velocity.y * dampening;
+      this.position.y = this.radius + y;
       this.illumination = 0.99;
     }
 
-    if (this.position.y + this.radius > boxHeight) {
+    if (this.position.y + this.radius > boxHeight + y) {
       this.velocity.y = -this.velocity.y * dampening;
-      this.position.y = boxHeight - this.radius;
+      this.position.y = boxHeight - this.radius + y;
       this.illumination = 0.99;
     }
 
@@ -68,11 +68,11 @@ class Sphere {
       this.illumination = 0.99;
     }
 
-    // if (this.position.z + this.radius > boxWidth) {
-    //   this.velocity.z = -this.velocity.z * dampening;
-    //   this.position.z = boxWidth - this.radius;
-    //   this.illumination = 0.99;
-    // }
+    if (this.position.z + this.radius > boxWidth) {
+      this.velocity.z = -this.velocity.z * dampening;
+      this.position.z = boxWidth - this.radius;
+      this.illumination = 0.99;
+    }
   }
 }
 
@@ -142,7 +142,7 @@ export const run = async (audioCtx, analyser) => {
               1
             )
         ),
-        ...[...Array(5)].map(
+        ...[...Array(3)].map(
           (o) =>
             new Sphere(
               -5 + 5 * Math.random(),
@@ -151,7 +151,7 @@ export const run = async (audioCtx, analyser) => {
               2
             )
         ),
-        ...[...Array(10)].map(
+        ...[...Array(5)].map(
           (o) =>
             new Sphere(
               -5 + 5 * Math.random(),
@@ -162,10 +162,12 @@ export const run = async (audioCtx, analyser) => {
         ),
       ],
     },
+    box: {
+      y: 10,
+    },
     audio: {
       offset: 22,
       beat: 0,
-      delta: 0,
     },
   };
 
@@ -272,7 +274,6 @@ export const run = async (audioCtx, analyser) => {
     updateFps(dt);
 
     analyser.getByteFrequencyData(fftDataArray);
-    state.audio.delta = fftDataArray[state.audio.offset] - state.audio.beat;
     state.audio.beat = fftDataArray[state.audio.offset];
 
     // state.gravity.y = Math.sin(state.now / 1000) - 0.5;
@@ -297,12 +298,7 @@ export const run = async (audioCtx, analyser) => {
     }
 
     state.spheres.objects.forEach((sphere) => {
-      sphere.checkWallCollision(
-        boxWidth,
-        boxHeight,
-        state.audio.beat,
-        state.audio.delta
-      );
+      sphere.checkWallCollision(boxWidth, boxHeight, state.box.y);
     });
   }
 
@@ -398,6 +394,8 @@ export const run = async (audioCtx, analyser) => {
         gl.getUniformLocation(program, "u_spheres"),
         state.spheres.objects.flatMap((sphere) => sphere.asVec4f())
       );
+
+      gl.uniform1f(gl.getUniformLocation(program, "u_box_y"), state.box.y);
 
       gl.uniform3f(
         gl.getUniformLocation(program, "u_palette_a"),
@@ -500,6 +498,7 @@ export const run = async (audioCtx, analyser) => {
       const generalFolder = gui.addFolder("General");
       generalFolder.add(state, "halt").listen();
       generalFolder.add(state, "now", 0, 100000, 1).listen();
+      generalFolder.add(state.box, "y", -30, 100, 0.01).listen();
       generalFolder.addColor(state.colorShift, "colorShift");
 
       const gravityFolder = gui.addFolder("Gravity");
@@ -554,7 +553,6 @@ export const run = async (audioCtx, analyser) => {
       const beatFolder = gui.addFolder("Audio");
       beatFolder.add(state.audio, "beat", 0.0, 255, 1).listen();
       beatFolder.add(state.audio, "offset", 0, 127, 1).listen();
-      beatFolder.add(state.audio, "delta", -128, 128, 1).listen();
 
       window.requestAnimationFrame(render);
     } catch (err) {

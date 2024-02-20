@@ -27,7 +27,9 @@ uniform float u_palette_offset;
 uniform float u_palette_range;
 uniform float u_palette_period;
 
-const int SPHERES_COUNT = 20;
+uniform float u_box_y;
+
+const int SPHERES_COUNT = 13;
 uniform vec4 u_spheres[SPHERES_COUNT];
 
 struct Surface {
@@ -91,33 +93,42 @@ const int FLOOR_FRONT = 6;
 const int SPHERE = 7;
 
 Surface scene(in vec3 p) {
-  Surface surface =
-      Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), u_beat / 255.));
+  float y = u_box_y;
+
+  Surface surface = Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), 0.));
+
+  surface = opUnion(
+      surface, Surface(FLOOR_BACK,
+                       udQuad(p, vec3(10., y, -10.), vec3(10., 20. + y, -10.),
+                              vec3(-10., 20. + y, -10.), vec3(-10., y, -10.))));
+
+  surface =
+      opUnion(surface, Surface(FLOOR_LEFT,
+                               udQuad(p, vec3(10., y, 10.), vec3(10., y, -10.),
+                                      vec3(10., 20. + y, -10.),
+                                      vec3(10., 20. + y, 10.))));
+
+  surface =
+      opUnion(surface, Surface(FLOOR_RIGHT, udQuad(p, vec3(-10., y, 10.),
+                                                   vec3(-10., y, -10.),
+                                                   vec3(-10., 20. + y, -10.),
+                                                   vec3(-10., 20. + y, 10.))));
+
+  surface =
+      opUnion(surface, Surface(FLOOR_TOP, udQuad(p, vec3(10., 20. + y, 10.),
+                                                 vec3(-10., 20. + y, 10.),
+                                                 vec3(-10., 20. + y, -10.),
+                                                 vec3(10., 20. + y, -10.))));
 
   surface = opUnion(
       surface,
-      Surface(FLOOR_BACK, udQuad(p, vec3(10., 0., -10.), vec3(10., 20., -10.),
-                                 vec3(-10., 20., -10.), vec3(-10., 0., -10.))));
+      Surface(FLOOR_BOTTOM, udQuad(p, vec3(10., y, 10.), vec3(-10., y, 10.),
+                                   vec3(-10., y, -10.), vec3(10., y, -10.))));
 
   surface = opUnion(
-      surface,
-      Surface(FLOOR_LEFT, udQuad(p, vec3(10., 0., 10.), vec3(10., 0., -10.),
-                                 vec3(10., 20., -10.), vec3(10., 20., 10.))));
-
-  surface = opUnion(
-      surface, Surface(FLOOR_RIGHT,
-                       udQuad(p, vec3(-10., 0., 10.), vec3(-10., 0., -10.),
-                              vec3(-10., 20., -10.), vec3(-10., 20., 10.))));
-
-  surface = opUnion(
-      surface,
-      Surface(FLOOR_TOP, udQuad(p, vec3(10., 20., 10.), vec3(-10., 20., 10.),
-                                vec3(-10., 20., -10.), vec3(10., 20., -10.))));
-
-  surface = opUnion(
-      surface,
-      Surface(FLOOR_FRONT, udQuad(p, vec3(10., 0., 10.), vec3(10., 20., 10.),
-                                  vec3(-10., 20., 10.), vec3(-10., 0., 10.))));
+      surface, Surface(FLOOR_FRONT,
+                       udQuad(p, vec3(10., y, 10.), vec3(10., 20. + y, 10.),
+                              vec3(-10., 20. + y, 10.), vec3(-10., y, 10.))));
 
   // surface = opUnion(surface, Surface(FLOOR_TOP, udQuad(p.xz, vec2(-10, 0),
   //                                                      vec2(10, 20), p.y)));
@@ -221,12 +232,6 @@ float sphIntersect(in vec3 p, in vec3 rayDir, in vec4 sphere) {
 }
 
 vec3 palette(in float t) {
-  // return vec3(0.5) +
-  //        vec3(0.5) *
-  //            cos(2. * PI *
-  //                (vec3(1.0) * (-0.3 + 0.4 * sin(10. * t + (u_time / 1000.)))
-  //                +
-  //                 vec3(0.0, 0.33, 0.67)));
   return u_palette_a +
          u_palette_b *
              cos(2. * PI *

@@ -28,6 +28,7 @@ uniform float u_palette_range;
 uniform float u_palette_period;
 
 uniform float u_box_y;
+uniform float u_box_size;
 
 const int SPHERES_COUNT = 13;
 uniform vec4 u_spheres[SPHERES_COUNT];
@@ -98,37 +99,51 @@ Surface scene(in vec3 p) {
   Surface surface = Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), 0.));
 
   surface = opUnion(
-      surface, Surface(FLOOR_BACK,
-                       udQuad(p, vec3(10., y, -10.), vec3(10., 20. + y, -10.),
-                              vec3(-10., 20. + y, -10.), vec3(-10., y, -10.))));
-
-  surface =
-      opUnion(surface, Surface(FLOOR_LEFT,
-                               udQuad(p, vec3(10., y, 10.), vec3(10., y, -10.),
-                                      vec3(10., 20. + y, -10.),
-                                      vec3(10., 20. + y, 10.))));
-
-  surface =
-      opUnion(surface, Surface(FLOOR_RIGHT, udQuad(p, vec3(-10., y, 10.),
-                                                   vec3(-10., y, -10.),
-                                                   vec3(-10., 20. + y, -10.),
-                                                   vec3(-10., 20. + y, 10.))));
-
-  surface =
-      opUnion(surface, Surface(FLOOR_TOP, udQuad(p, vec3(10., 20. + y, 10.),
-                                                 vec3(-10., 20. + y, 10.),
-                                                 vec3(-10., 20. + y, -10.),
-                                                 vec3(10., 20. + y, -10.))));
+      surface,
+      Surface(FLOOR_BACK,
+              udQuad(p, vec3(u_box_size, y, -u_box_size),
+                     vec3(u_box_size, 2. * u_box_size + y, -u_box_size),
+                     vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
+                     vec3(-u_box_size, y, -u_box_size))));
 
   surface = opUnion(
       surface,
-      Surface(FLOOR_BOTTOM, udQuad(p, vec3(10., y, 10.), vec3(-10., y, 10.),
-                                   vec3(-10., y, -10.), vec3(10., y, -10.))));
+      Surface(FLOOR_LEFT,
+              udQuad(p, vec3(u_box_size, y, u_box_size),
+                     vec3(u_box_size, y, -u_box_size),
+                     vec3(u_box_size, 2. * u_box_size + y, -u_box_size),
+                     vec3(u_box_size, 2. * u_box_size + y, u_box_size))));
 
   surface = opUnion(
-      surface, Surface(FLOOR_FRONT,
-                       udQuad(p, vec3(10., y, 10.), vec3(10., 20. + y, 10.),
-                              vec3(-10., 20. + y, 10.), vec3(-10., y, 10.))));
+      surface,
+      Surface(FLOOR_RIGHT,
+              udQuad(p, vec3(-u_box_size, y, u_box_size),
+                     vec3(-u_box_size, y, -u_box_size),
+                     vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
+                     vec3(-u_box_size, 2. * u_box_size + y, u_box_size))));
+
+  surface = opUnion(
+      surface,
+      Surface(FLOOR_TOP,
+              udQuad(p, vec3(u_box_size, 2. * u_box_size + y, u_box_size),
+                     vec3(-u_box_size, 2. * u_box_size + y, u_box_size),
+                     vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
+                     vec3(u_box_size, 2. * u_box_size + y, -u_box_size))));
+
+  surface = opUnion(
+      surface, Surface(FLOOR_BOTTOM, udQuad(p, vec3(u_box_size, y, u_box_size),
+                                            vec3(-u_box_size, y, u_box_size),
+                                            vec3(-u_box_size, y, -u_box_size),
+                                            vec3(u_box_size, y, -u_box_size))));
+
+  // surface =
+  //     opUnion(surface,
+  //             Surface(FLOOR_FRONT,
+  //                     udQuad(p, vec3(u_box_size, y, u_box_size),
+  //                            vec3(u_box_size, 2. * u_box_size + y,
+  //                            u_box_size), vec3(-u_box_size, 2. * u_box_size +
+  //                            y, u_box_size), vec3(-u_box_size, y,
+  //                            u_box_size))));
 
   // surface = opUnion(surface, Surface(FLOOR_TOP, udQuad(p.xz, vec2(-10, 0),
   //                                                      vec2(10, 20), p.y)));

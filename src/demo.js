@@ -164,6 +164,7 @@ export const run = async (audioCtx, analyser) => {
     },
     box: {
       y: 10,
+      size: 10,
     },
     audio: {
       offset: 22,
@@ -275,6 +276,7 @@ export const run = async (audioCtx, analyser) => {
 
     analyser.getByteFrequencyData(fftDataArray);
     state.audio.beat = fftDataArray[state.audio.offset];
+    // state.box.size = 10 + state.audio.beat / 64;
 
     // state.gravity.y = Math.sin(state.now / 1000) - 0.5;
     // state.gravity.x = -Math.sin(state.now / 10000);
@@ -298,7 +300,11 @@ export const run = async (audioCtx, analyser) => {
     }
 
     state.spheres.objects.forEach((sphere) => {
-      sphere.checkWallCollision(boxWidth, boxHeight, state.box.y);
+      sphere.checkWallCollision(
+        state.box.size,
+        state.box.size * 2,
+        state.box.y
+      );
     });
   }
 
@@ -396,6 +402,10 @@ export const run = async (audioCtx, analyser) => {
       );
 
       gl.uniform1f(gl.getUniformLocation(program, "u_box_y"), state.box.y);
+      gl.uniform1f(
+        gl.getUniformLocation(program, "u_box_size"),
+        state.box.size
+      );
 
       gl.uniform3f(
         gl.getUniformLocation(program, "u_palette_a"),
@@ -499,6 +509,7 @@ export const run = async (audioCtx, analyser) => {
       generalFolder.add(state, "halt").listen();
       generalFolder.add(state, "now", 0, 100000, 1).listen();
       generalFolder.add(state.box, "y", -30, 100, 0.01).listen();
+      generalFolder.add(state.box, "size", 0, 100, 0.01).listen();
       generalFolder.addColor(state.colorShift, "colorShift");
 
       const gravityFolder = gui.addFolder("Gravity");

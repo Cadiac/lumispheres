@@ -1,8 +1,5 @@
 import * as dat from "dat.gui";
 
-const boxWidth = 10;
-const boxHeight = 20;
-
 class Sphere {
   constructor(x, y, z, radius) {
     this.position = { x, y, z };
@@ -90,7 +87,7 @@ export const run = async (audioCtx, analyser) => {
     },
     gravity: {
       x: 0.0,
-      y: -0.5,
+      y: 0.0,
       z: 0.0,
     },
     camera: {
@@ -98,12 +95,12 @@ export const run = async (audioCtx, analyser) => {
       fov: 60,
       position: {
         x: 0,
-        y: 10,
+        y: 20,
         z: 60,
       },
       target: {
         x: 0,
-        y: 10,
+        y: 20,
         z: 0,
       },
     },
@@ -123,10 +120,17 @@ export const run = async (audioCtx, analyser) => {
       colorShift: [255, 235, 255],
     },
     palette: {
-      a: [155, 155, 155],
+      a: [95, 28, 28],
       b: [174, 74, 74],
       c: [9, 9, 203],
-      d: [173, 102, 102],
+      d: [48, 40, 40],
+
+      // Pinkish
+      // a: [155, 155, 155],
+      // b: [174, 74, 74],
+      // c: [9, 9, 203],
+      // d: [173, 102, 102],
+
       offset: 0.0,
       range: 1.0,
       period: 10,
@@ -137,7 +141,7 @@ export const run = async (audioCtx, analyser) => {
           (o) =>
             new Sphere(
               -5 + 5 * Math.random(),
-              5 + 5 * Math.random(),
+              20 + 5 * Math.random(),
               5 + 5 * Math.random(),
               1
             )
@@ -146,7 +150,7 @@ export const run = async (audioCtx, analyser) => {
           (o) =>
             new Sphere(
               -5 + 5 * Math.random(),
-              5 + 5 * Math.random(),
+              20 + 5 * Math.random(),
               5 + 5 * Math.random(),
               2
             )
@@ -155,7 +159,7 @@ export const run = async (audioCtx, analyser) => {
           (o) =>
             new Sphere(
               -5 + 5 * Math.random(),
-              5 + 5 * Math.random(),
+              20 + 5 * Math.random(),
               5 + 5 * Math.random(),
               3
             )

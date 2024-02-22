@@ -226,17 +226,15 @@ function CPlayer() {
     });
 }
 
+add = (a, b) => a.map((v, i) => v + b[i]);
+sub = (a, b) => a.map((v, i) => v - b[i]);
+mul = (a, b) => a.map((v, i) => v * b[i]);
+div = (a, s) => a.map(v => v / s);
+sum = (a) => a.reduce((v, i) => v + i);
+
 const Sphere = (x, y, z, radius) => ({
-  position: {
-    x,
-    y,
-    z,
-  },
-  velocity: {
-    x: -0.5 + Math.random(),
-    y: -0.5 + Math.random(),
-    z: -0.5 + Math.random(),
-  },
+  position: [x,y,z],
+  velocity: [-0.5 + Math.random(), -0.5 + Math.random(), -0.5 + Math.random()],
   illumination: 0,
   radius,
   mass: (4 / 3) * Math.PI * Math.pow(radius, 3),
@@ -345,11 +343,7 @@ const run = async (audioCtx, analyser) => {
             x: 0,
             y: 0,
           },
-          gravity: {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-          },
+          gravity: [0, 0, 0],
           camera: {
             fov: 60,
             position: {
@@ -446,64 +440,71 @@ const run = async (audioCtx, analyser) => {
     }
   }
 
+  // function handleCollisions(s1, s2) {
+  //   dx = s2.position.x - s1.position.x;
+  //   dy = s2.position.y - s1.position.y;
+  //   dz = s2.position.z - s1.position.z;
+  //   d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  //   o = s1.r + s2.r - d;
+  //   if (o > 0) {
+  //     nx = dx / d;
+  //     ny = dy / d;
+  //     nz = dz / d;
+  //     v1i = s1.velocity.x * nx + s1.velocity.y * ny + s1.velocity.z * nz;
+  //     v2i = s2.velocity.x * nx + s2.velocity.y * ny + s2.velocity.z * nz;
+  //     m = s1.mass + s2.mass;
+  //     v1f = (v1i * (s1.mass - s2.mass) + 2 * s2.mass * v2i) / m;
+  //     v2f = (v2i * (s2.mass - s1.mass) + 2 * s1.mass * v1i) / m;
+  //     s1.velocity.x += (v1f - v1i) * nx;
+  //     s1.velocity.y += (v1f - v1i) * ny;
+  //     s1.velocity.z += (v1f - v1i) * nz;
+  //     s2.velocity.x += (v2f - v2i) * nx;
+  //     s2.velocity.y += (v2f - v2i) * ny;
+  //     s2.velocity.z += (v2f - v2i) * nz;
+  //     moveA = o * (s2.mass / m);
+  //     moveB = o * (s1.mass / m);
+  //     s1.position.x -= moveA * nx;
+  //     s1.position.y -= moveA * ny;
+  //     s1.position.z -= moveA * nz;
+  //     s2.position.x += moveB * nx;
+  //     s2.position.y += moveB * ny;
+  //     s2.position.z += moveB * nz;
+  //     s1.illumination = s2.illumination = 0.999;
+  //   }
+  // }
+
   function handleCollisions(sphere1, sphere2) {
-    const dx = sphere2.position.x - sphere1.position.x;
-    const dy = sphere2.position.y - sphere1.position.y;
-    const dz = sphere2.position.z - sphere1.position.z;
+    [dx, dy, dz] = dxyz = sub(sphere2.position, sphere1.position);
+    d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    o = sphere1.radius + sphere2.radius - d;
 
-    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    const overlap = sphere1.radius + sphere2.radius - distance;
+    if (o > 0) {
+      [nx, ny, nz] = nxyz = div(dxyz, d);
 
-    const isCollision = overlap > 0;
-
-    if (isCollision) {
-      // Normalized direction vector components
-      const nx = dx / distance;
-      const ny = dy / distance;
-      const nz = dz / distance;
-
-      // Calculate the velocity components along the normalized direction vector
-      const v1i =
-        sphere1.velocity.x * nx +
-        sphere1.velocity.y * ny +
-        sphere1.velocity.z * nz;
-      const v2i =
-        sphere2.velocity.x * nx +
-        sphere2.velocity.y * ny +
-        sphere2.velocity.z * nz;
+      v1i = sum(mul(sphere1.velocity, nxyz));
+      v2i = sum(mul(sphere2.velocity, nxyz));
 
       // Calculate the final velocities along the collision line using the conservation of momentum and kinetic energy
-      const v1f =
+      dv1 =
         (v1i * (sphere1.mass - sphere2.mass) + 2 * sphere2.mass * v2i) /
-        (sphere1.mass + sphere2.mass);
-      const v2f =
+        (sphere1.mass + sphere2.mass) - v1i
+      dv2 =
         (v2i * (sphere2.mass - sphere1.mass) + 2 * sphere1.mass * v1i) /
-        (sphere1.mass + sphere2.mass);
+        (sphere1.mass + sphere2.mass) - v2i;
 
       // Update the velocities of the spheres
-      sphere1.velocity.x += (v1f - v1i) * nx;
-      sphere1.velocity.y += (v1f - v1i) * ny;
-      sphere1.velocity.z += (v1f - v1i) * nz;
-
-      sphere2.velocity.x += (v2f - v2i) * nx;
-      sphere2.velocity.y += (v2f - v2i) * ny;
-      sphere2.velocity.z += (v2f - v2i) * nz;
+      sphere1.velocity = add(sphere1.velocity, mul([dv1, dv1, dv1], nxyz));
+      sphere2.velocity = add(sphere2.velocity, mul([dv2, dv2, dv2], nxyz));
 
       // Move spheres apart along the line of collision based on their mass
-      const totalMass = sphere1.mass + sphere2.mass;
-      const moveSphere1 = overlap * (sphere2.mass / totalMass);
-      const moveSphere2 = overlap * (sphere1.mass / totalMass);
+      tm = sphere1.mass + sphere2.mass;
+      m1 = o * (sphere2.mass / tm);
+      m2 = o * (sphere1.mass / tm);
 
-      sphere1.position.x -= moveSphere1 * nx;
-      sphere1.position.y -= moveSphere1 * ny;
-      sphere1.position.z -= moveSphere1 * nz;
+      sphere1.position = sub(sphere1.position, mul([m1, m1, m1], nxyz));
+      sphere2.position = sub(sphere2.position, mul([m2, m2, m2], nxyz));
 
-      sphere2.position.x += moveSphere2 * nx;
-      sphere2.position.y += moveSphere2 * ny;
-      sphere2.position.z += moveSphere2 * nz;
-
-      sphere1.illumination = 0.999;
-      sphere2.illumination = 0.999;
+      sphere1.illumination = sphere2.illumination = 0.999;
     }
   }
 
@@ -519,9 +520,7 @@ const run = async (audioCtx, analyser) => {
         sphere.illumination - 6 * dt * (1 - sphere.illumination)
       );
 
-      sphere.position.x += (state.gravity.x + sphere.velocity.x) * dt;
-      sphere.position.y += (state.gravity.y + sphere.velocity.y) * dt;
-      sphere.position.z += (state.gravity.z + sphere.velocity.z) * dt;
+      sphere.position = add(sphere.position, mul(add(state.gravity, sphere.velocity), [dt, dt, dt]));
     });
 
     for (let i = 0; i < state.spheres.objects.length; i++) {
@@ -537,39 +536,39 @@ const run = async (audioCtx, analyser) => {
 
       const dampening = 0.8;
 
-      if (sphere.position.x - sphere.radius < -boxWidth) {
-        sphere.velocity.x = -sphere.velocity.x * dampening;
-        sphere.position.x = -boxWidth + sphere.radius;
+      if (sphere.position[0] - sphere.radius < -boxWidth) {
+        sphere.velocity[0] = -sphere.velocity[0] * dampening;
+        sphere.position[0] = -boxWidth + sphere.radius;
         sphere.illumination = 0.99;
       }
 
-      if (sphere.position.x + sphere.radius > boxWidth) {
-        sphere.velocity.x = -sphere.velocity.x * dampening;
-        sphere.position.x = boxWidth - sphere.radius;
+      if (sphere.position[0] + sphere.radius > boxWidth) {
+        sphere.velocity[0] = -sphere.velocity[0] * dampening;
+        sphere.position[0] = boxWidth - sphere.radius;
         sphere.illumination = 0.99;
       }
 
-      if (sphere.position.y - sphere.radius < y) {
-        sphere.velocity.y = -sphere.velocity.y * dampening;
-        sphere.position.y = sphere.radius + y;
+      if (sphere.position[1] - sphere.radius < y) {
+        sphere.velocity[1] = -sphere.velocity[1] * dampening;
+        sphere.position[1] = sphere.radius + y;
         sphere.illumination = 0.99;
       }
 
-      if (sphere.position.y + sphere.radius > boxHeight + y) {
-        sphere.velocity.y = -sphere.velocity.y * dampening;
-        sphere.position.y = boxHeight - sphere.radius + y;
+      if (sphere.position[1] + sphere.radius > boxHeight + y) {
+        sphere.velocity[1] = -sphere.velocity[1] * dampening;
+        sphere.position[1] = boxHeight - sphere.radius + y;
         sphere.illumination = 0.99;
       }
 
-      if (sphere.position.z - sphere.radius < -boxWidth) {
-        sphere.velocity.z = -sphere.velocity.z * dampening;
-        sphere.position.z = -boxWidth + sphere.radius;
+      if (sphere.position[2] - sphere.radius < -boxWidth) {
+        sphere.velocity[2] = -sphere.velocity[2] * dampening;
+        sphere.position[2] = -boxWidth + sphere.radius;
         sphere.illumination = 0.99;
       }
 
-      if (sphere.position.z + sphere.radius > boxWidth) {
-        sphere.velocity.z = -sphere.velocity.z * dampening;
-        sphere.position.z = boxWidth - sphere.radius;
+      if (sphere.position[2] + sphere.radius > boxWidth) {
+        sphere.velocity[2] = -sphere.velocity[2] * dampening;
+        sphere.position[2] = boxWidth - sphere.radius;
         sphere.illumination = 0.99;
       }
     });
@@ -655,9 +654,7 @@ const run = async (audioCtx, analyser) => {
       gl.uniform4fv(
         gl.getUniformLocation(program, "u_spheres"),
         state.spheres.objects.flatMap((s) => [
-          s.position.x,
-          s.position.y,
-          s.position.z,
+          ...s.position,
           // w component carries radius in integer part, illumination in fraction part
           s.radius + s.illumination,
         ])
@@ -729,9 +726,9 @@ const setupDebugUI = () => {
   generalFolder.addColor(state.colorShift, "colorShift");
 
   const gravityFolder = gui.addFolder("Gravity");
-  gravityFolder.add(state.gravity, "x", -10, 10, 0.01).listen();
-  gravityFolder.add(state.gravity, "y", -10, 10, 0.01).listen();
-  gravityFolder.add(state.gravity, "z", -10, 10, 0.01).listen();
+  gravityFolder.add(state.gravity, "0", -10, 10, 0.01).listen();
+  gravityFolder.add(state.gravity, "1", -10, 10, 0.01).listen();
+  gravityFolder.add(state.gravity, "2", -10, 10, 0.01).listen();
 
   const cameraFolder = gui.addFolder("Camera");
   cameraFolder.add(state.camera, "fov", -180, 180, 0.1);

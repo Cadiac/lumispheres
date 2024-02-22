@@ -1,3 +1,6 @@
+SPHERES = 13
+DAMPENING = 0.8
+
 // prettier-ignore
 song = {songData:[{i:[0,28,128,0,0,28,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],p:[3,3,3,3,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[131,,143,,,,143,,,,,,,143,131,,130,,142,,,,142,,,,,,,142,130,,138,138,,150,,138,,150,,,,,150,,,,137,137,,137,,137,,137,,,,,149,,,,142,,142,,154,,142,,154,,,154,,,,,140,,140,,152,,140,,152,,,152,,,,,145,,,145,,,,145,,157,157,,,,,,147,,,147,,,,147,,159,159],f:[]},{n:[135,,147,,,,147,,,,,,,147,135,,133,,145,,,,145,,137,,137,,,,,,137,137,,149,,137,,149,,,,,149,,,,138,138,,150,,138,,150,140,140,,140,,140,,140,140,,140,,152,,140,,152,,,152,,,,,140,,140,,152,,140,,147,,147,,147,,147,,,,,,,,,,,144,142,,,,,,142,,,,,154,,,133,,,145,,133],f:[]},{n:[131,,,,,,,,,,,,,,,,130,,142,,,,142,,,,,,,142,130],f:[]}]},{i:[0,91,128,0,0,95,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],p:[,,,,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[116,,,,,,,,,,,,,,,,118],f:[]},{n:[121,,,,,,,,,,,,,,,,114,,,,,,,,121,,,,,,,,,,,,,,,,,,,,,,,,131],f:[]}]},{i:[0,255,116,79,0,255,116,0,83,0,4,6,69,52,0,0,0,0,0,0,2,14,0,0,32,0,0,0,0],p:[,1,,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[135,,,,,,,,135,,135],f:[]},{n:[,,,,,,,,135,,,,135,,,,135,,135,,135,,,,135,,,,135],f:[]}]},{i:[0,0,140,0,0,0,140,0,0,81,4,10,47,55,0,0,0,187,5,0,1,239,135,0,32,108,5,16,4],p:[,,,,,,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[135,135,135,135,135,135,135,135,,,,,,,135,,,,135,,,,,,135,,,,,,135],f:[]},{n:[135,,,,135,,,,135,,,,135,,,,135,,,,135,,,,135,,,,135],f:[]}]},{i:[0,0,128,0,0,0,128,0,0,125,0,1,59,0,0,0,0,0,0,0,1,193,171,0,29,39,3,88,3],p:[,,,,,,1,,1,,1,,1,,1,,1],c:[{n:[135],f:[]}]},{i:[0,127,104,64,0,130,104,0,64,229,4,40,43,51,0,0,0,231,6,1,3,183,15,0,32,128,4,0,0],p:[,,,,,,,,1,,1,,1,,1,,1],c:[{n:[,,,,135],f:[]}]},{i:[3,255,128,0,0,255,140,0,0,127,2,2,47,61,0,0,0,96,3,1,3,94,79,0,95,84,2,12,4],p:[,,,,,,,,1,,1,,1,,1,,1],c:[{n:[,,,,,,135],f:[]}]},{i:[0,0,140,0,0,0,140,0,0,255,158,158,158,0,0,0,0,51,2,1,2,58,239,0,32,88,1,157,2],p:[1,,1],c:[{n:[111],f:[]}]}],rowLen:6615,patternLen:32,endPattern:17,numChannels:8};
 function CPlayer() {
@@ -7,20 +10,20 @@ function CPlayer() {
     t,
     e,
     a = function (r) {
-      return Math.sin(6.283184 * r);
+      return Math.sin(6.283184 * r)
     },
     f = function (r) {
-      return (r % 1) * 2 - 1;
+      return (r % 1) * 2 - 1
     },
     o = function (r) {
-      return r % 1 < 0.5 ? 1 : -1;
+      return r % 1 < 0.5 ? 1 : -1
     },
     u = function (r) {
-      var n = (r % 1) * 4;
-      return n < 2 ? n - 1 : 3 - n;
+      var n = (r % 1) * 4
+      return n < 2 ? n - 1 : 3 - n
     },
     c = function (r) {
-      return 0.003959503758 * 2 ** ((r - 128) / 12);
+      return 0.003959503758 * 2 ** ((r - 128) / 12)
     },
     v = function (r, n, i) {
       var t,
@@ -45,7 +48,7 @@ function CPlayer() {
         I = i * 2 ** (2 - r.i[15]),
         m = new Int32Array(M + p + L),
         B = 0,
-        P = 0;
+        P = 0
       for (t = 0, e = 0; t < M + p + L; t++, e++)
         e >= 0 &&
           ((D = (D >> 8) | ((255 & D) << 4)),
@@ -62,16 +65,16 @@ function CPlayer() {
           (P += u * a ** y),
           (f += g(P) * l),
           A && (f += (2 * Math.random() - 1) * A),
-          (m[t] = (80 * f * a) | 0);
-      return m;
+          (m[t] = (80 * f * a) | 0)
+      return m
     },
-    h = [a, o, f, u];
-  (this.init = function (a) {
-    (r = a),
+    h = [a, o, f, u]
+  ;(this.init = function (a) {
+    ;(r = a),
       (n = a.endPattern),
       (i = 0),
       (t = a.rowLen * a.patternLen * (n + 1) * 2),
-      (e = new Int32Array(t));
+      (e = new Int32Array(t))
   }),
     (this.generate = function () {
       var f,
@@ -95,11 +98,11 @@ function CPlayer() {
         B = 0,
         P = 0,
         x = !1,
-        U = [];
+        U = []
       for (u = 0; u <= n; ++u)
         for (g = D.p[u], c = 0; c < m; ++c) {
-          var W = g ? D.c[g - 1].f[c] : 0;
-          W && ((D.i[W - 1] = D.c[g - 1].f[c + m] || 0), W < 17 && (U = []));
+          var W = g ? D.c[g - 1].f[c] : 0
+          W && ((D.i[W - 1] = D.c[g - 1].f[c + m] || 0), W < 17 && (U = []))
           var b = h[D.i[16]],
             j = D.i[17] / 512,
             k = 2 ** (D.i[18] - 9) / I,
@@ -112,12 +115,12 @@ function CPlayer() {
             J = D.i[25] / 512,
             K = (6.283184 * 2 ** (D.i[26] - 9)) / I,
             N = D.i[27] / 255,
-            O = (D.i[28] * I) & -2;
+            O = (D.i[28] * I) & -2
           for (M = (u * m + c) * I, s = 0; s < 4; ++s)
             if (((w = g ? D.c[g - 1].n[c + s * m] : 0), w)) {
-              U[w] || (U[w] = v(D, w, I));
-              var Q = U[w];
-              for (o = 0, f = 2 * M; o < Q.length; o++, f += 2) C[f] += Q[o];
+              U[w] || (U[w] = v(D, w, I))
+              var Q = U[w]
+              for (o = 0, f = 2 * M; o < Q.length; o++, f += 2) C[f] += Q[o]
             }
           for (o = 0; o < I; o++)
             (l = 2 * (M + o)),
@@ -144,21 +147,21 @@ function CPlayer() {
               (C[l] = 0 | d),
               (C[l + 1] = 0 | A),
               (e[l] += 0 | d),
-              (e[l + 1] += 0 | A);
+              (e[l + 1] += 0 | A)
         }
-      return i++, i / r.numChannels;
+      return i++, i / r.numChannels
     }),
     (this.createAudioBuffer = function (r) {
       for (var n = r.createBuffer(2, t / 2, 44100), i = 0; i < 2; i++)
         for (var a = n.getChannelData(i), f = i; f < t; f += 2)
-          a[f >> 1] = e[f] / 65536;
-      return n;
+          a[f >> 1] = e[f] / 65536
+      return n
     }),
     (this.createWave = function () {
       var r = 44,
         n = r + 2 * t - 8,
         i = n - 36,
-        a = new Uint8Array(r + 2 * t);
+        a = new Uint8Array(r + 2 * t)
       a.set([
         82,
         73,
@@ -203,15 +206,15 @@ function CPlayer() {
         255 & i,
         (i >> 8) & 255,
         (i >> 16) & 255,
-        (i >> 24) & 255,
-      ]);
+        (i >> 24) & 255
+      ])
       for (var f = 0, o = r; f < t; ++f) {
-        var u = e[f];
-        (u = u < -32767 ? -32767 : u > 32767 ? 32767 : u),
+        var u = e[f]
+        ;(u = u < -32767 ? -32767 : u > 32767 ? 32767 : u),
           (a[o++] = 255 & u),
-          (a[o++] = (u >> 8) & 255);
+          (a[o++] = (u >> 8) & 255)
       }
-      return a;
+      return a
     }),
     (this.getData = function (r, n) {
       for (
@@ -219,119 +222,119 @@ function CPlayer() {
         a < 2 * n;
         a += 1
       ) {
-        var f = i + a;
-        t[a] = r > 0 && f < e.length ? e[f] / 32768 : 0;
+        var f = i + a
+        t[a] = r > 0 && f < e.length ? e[f] / 32768 : 0
       }
-      return t;
-    });
+      return t
+    })
 }
 
-add = (a, b) => a.map((v, i) => v + b[i]);
-sub = (a, b) => a.map((v, i) => v - b[i]);
-mul = (a, b) => a.map((v, i) => v * b[i]);
-div = (a, s) => a.map((v) => v / s);
-sum = (a) => a.reduce((v, i) => v + i);
+add = (a, b) => a.map((v, i) => v + b[i])
+sub = (a, b) => a.map((v, i) => v - b[i])
+mul = (a, b) => a.map((v, i) => v * b[i])
+div = (a, s) => a.map((v) => v / s)
+sum = (a) => a.reduce((v, i) => v + i)
 
 const Sphere = (x, y, z, radius) => ({
   position: [x, y, z],
   velocity: [-0.5 + Math.random(), -0.5 + Math.random(), -0.5 + Math.random()],
   illumination: 0,
   radius,
-  mass: (4 / 3) * Math.PI * Math.pow(radius, 3),
-});
+  mass: (4 / 3) * Math.PI * Math.pow(radius, 3)
+})
 
-running = false;
+running = false
 
 const run = async (audioCtx, analyser) => {
   if (running) {
-    return;
+    return
   }
 
-  running = true;
+  running = true
 
-  player = new CPlayer();
-  audioCtx = new AudioContext();
-  player.init(song);
+  player = new CPlayer()
+  audioCtx = new AudioContext()
+  player.init(song)
 
   document.addEventListener(
-    "keydown",
+    'keydown',
     (e) => {
-      if (e.key === "Escape") {
-        state.halt = !state.halt;
-        audioCtx.close();
+      if (e.key === 'Escape') {
+        state.halt = !state.halt
+        audioCtx.close()
       }
     },
     true
-  );
+  )
 
-  const vertexShader = `attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`;
-  const fragmentShader = await fetch("4k/fragment.glsl").then((res) =>
+  const vertexShader = `attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`
+  const fragmentShader = await fetch('4k/fragment.glsl').then((res) =>
     res.text()
-  );
+  )
 
-  const canvas = document.createElement("canvas");
-  document.body.appendChild(canvas);
-  canvas.style.position = "fixed";
-  canvas.style.left = canvas.style.top = 0;
+  const canvas = document.createElement('canvas')
+  document.body.appendChild(canvas)
+  canvas.style.position = 'fixed'
+  canvas.style.left = canvas.style.top = 0
 
-  gl = canvas.getContext("webgl");
-  program = gl.createProgram();
+  gl = canvas.getContext('webgl')
+  program = gl.createProgram()
 
   function init() {
     if (player.generate() >= 1) {
-      const wave = player.createWave();
-      const audio = document.createElement("audio");
-      audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
-      audio.onplay = () => audioCtx.resume();
+      const wave = player.createWave()
+      const audio = document.createElement('audio')
+      audio.src = URL.createObjectURL(new Blob([wave], { type: 'audio/wav' }))
+      audio.onplay = () => audioCtx.resume()
 
-      analyser = audioCtx.createAnalyser();
-      const source = audioCtx.createMediaElementSource(audio);
+      analyser = audioCtx.createAnalyser()
+      const source = audioCtx.createMediaElementSource(audio)
 
-      source.connect(analyser);
-      analyser.connect(audioCtx.destination);
-      analyser.fftSize = 256;
-      fftDataArray = new Uint8Array(analyser.frequencyBinCount);
+      source.connect(analyser)
+      analyser.connect(audioCtx.destination)
+      analyser.fftSize = 256
+      fftDataArray = new Uint8Array(analyser.frequencyBinCount)
 
-      audio.play();
+      audio.play()
 
       try {
         if (!gl) {
-          alert("WebGL canvas is required");
-          return;
+          alert('WebGL canvas is required')
+          return
         }
 
-        let shader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(shader, vertexShader);
-        gl.compileShader(shader);
+        let shader = gl.createShader(gl.VERTEX_SHADER)
+        gl.shaderSource(shader, vertexShader)
+        gl.compileShader(shader)
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-          alert("Vertex shader: " + gl.getShaderInfoLog(shader));
+          alert('Vertex shader: ' + gl.getShaderInfoLog(shader))
         }
-        gl.attachShader(program, shader);
+        gl.attachShader(program, shader)
 
-        shader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(shader, fragmentShader);
-        gl.compileShader(shader);
+        shader = gl.createShader(gl.FRAGMENT_SHADER)
+        gl.shaderSource(shader, fragmentShader)
+        gl.compileShader(shader)
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-          alert("Fragment shader: " + gl.getShaderInfoLog(shader));
+          alert('Fragment shader: ' + gl.getShaderInfoLog(shader))
         }
-        gl.attachShader(program, shader);
+        gl.attachShader(program, shader)
 
-        gl.linkProgram(program);
+        gl.linkProgram(program)
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-          alert("Link program: " + gl.getProgramInfoLog(program));
+          alert('Link program: ' + gl.getProgramInfoLog(program))
         }
 
-        const vertices = [1, 1, 1, -1, -1, 1, -1, -1];
+        const vertices = [1, 1, 1, -1, -1, 1, -1, -1]
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
         gl.bufferData(
           gl.ARRAY_BUFFER,
           new Float32Array(vertices),
           gl.STATIC_DRAW
-        );
+        )
 
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(0)
+        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
 
         state = {
           halt: false,
@@ -341,7 +344,7 @@ const run = async (audioCtx, analyser) => {
           lastRenderTime: 0,
           resolution: {
             x: 0,
-            y: 0,
+            y: 0
           },
           gravity: [0, 0, 0],
           camera: {
@@ -349,28 +352,28 @@ const run = async (audioCtx, analyser) => {
             position: {
               x: 0,
               y: 20,
-              z: 60,
+              z: 60
             },
             target: {
               x: 0,
               y: 20,
-              z: 0,
-            },
+              z: 0
+            }
           },
           sun: {
             x: -1.23,
             y: 2,
-            z: -100,
+            z: -100
           },
           fog: {
             color: [230, 97, 205],
-            intensity: 0.005,
+            intensity: 0.005
           },
           sky: {
-            color: [61, 245, 245],
+            color: [61, 245, 245]
           },
           colorShift: {
-            colorShift: [255, 235, 255],
+            colorShift: [255, 235, 255]
           },
           palette: {
             a: [95, 28, 28],
@@ -386,356 +389,295 @@ const run = async (audioCtx, analyser) => {
 
             offset: 0.0,
             range: 1.0,
-            period: 10,
+            period: 10
           },
           spheres: {
-            objects: [
-              ...[...Array(5)].map((o) =>
-                Sphere(
-                  -5 + 5 * Math.random(),
-                  20 + 5 * Math.random(),
-                  5 + 5 * Math.random(),
-                  1
-                )
-              ),
-              ...[...Array(3)].map((o) =>
-                Sphere(
-                  -5 + 5 * Math.random(),
-                  20 + 5 * Math.random(),
-                  5 + 5 * Math.random(),
-                  2
-                )
-              ),
-              ...[...Array(5)].map((o) =>
-                Sphere(
-                  -5 + 5 * Math.random(),
-                  20 + 5 * Math.random(),
-                  5 + 5 * Math.random(),
-                  3
-                )
-              ),
-            ],
+            objects: [...Array(SPHERES)].map((_, i) =>
+              Sphere(
+                -5 + 5 * Math.random(),
+                15 + 5 * Math.random(),
+                -5 + 5 * Math.random(),
+                (i % 3) + 1
+              )
+            )
           },
           box: {
             y: 10,
-            size: 10,
+            size: 10
           },
           audio: {
             offset: 90, // Hihat
             // offset: 6, // bass
             // offset: 22, // generic
-            beat: 0,
-          },
-        };
+            beat: 0
+          }
+        }
 
-        setupDebugUI();
+        setupDebugUI()
 
-        window.requestAnimationFrame(render);
+        window.requestAnimationFrame(render)
       } catch (err) {
-        console.error(err);
-        alert("Error: " + err.message);
+        console.error(err)
+        alert('Error: ' + err.message)
       }
     } else {
-      setTimeout(init, 50);
+      setTimeout(init, 50)
     }
   }
 
-  function handleCollisions(sphere1, sphere2) {
-    [dx, dy, dz] = dxyz = sub(sphere2.position, sphere1.position);
-    d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    o = sphere1.radius + sphere2.radius - d;
+  function collisions(sphere1, sphere2) {
+    ;[dx, dy, dz] = dxyz = sub(sphere2.position, sphere1.position)
+    d = Math.sqrt(dx * dx + dy * dy + dz * dz)
+    o = sphere1.radius + sphere2.radius - d
 
     if (o > 0) {
-      [nx, ny, nz] = nxyz = div(dxyz, d);
+      ;[nx, ny, nz] = nxyz = div(dxyz, d)
 
-      v1i = sum(mul(sphere1.velocity, nxyz));
-      v2i = sum(mul(sphere2.velocity, nxyz));
+      v1i = sum(mul(sphere1.velocity, nxyz))
+      v2i = sum(mul(sphere2.velocity, nxyz))
 
       dv1 =
         (v1i * (sphere1.mass - sphere2.mass) + 2 * sphere2.mass * v2i) /
           (sphere1.mass + sphere2.mass) -
-        v1i;
+        v1i
       dv2 =
         (v2i * (sphere2.mass - sphere1.mass) + 2 * sphere1.mass * v1i) /
           (sphere1.mass + sphere2.mass) -
-        v2i;
+        v2i
 
-      sphere1.velocity = add(sphere1.velocity, mul([dv1, dv1, dv1], nxyz));
-      sphere2.velocity = add(sphere2.velocity, mul([dv2, dv2, dv2], nxyz));
+      sphere1.velocity = add(sphere1.velocity, mul([dv1, dv1, dv1], nxyz))
+      sphere2.velocity = add(sphere2.velocity, mul([dv2, dv2, dv2], nxyz))
 
-      tm = sphere1.mass + sphere2.mass;
-      m1 = (o * sphere2.mass) / tm;
-      m2 = (o * sphere1.mass) / tm;
+      tm = sphere1.mass + sphere2.mass
+      m1 = (o * sphere2.mass) / tm
+      m2 = (o * sphere1.mass) / tm
 
-      sphere1.position = sub(sphere1.position, mul([m1, m1, m1], nxyz));
-      sphere2.position = add(sphere2.position, mul([m2, m2, m2], nxyz));
+      sphere1.position = sub(sphere1.position, mul([m1, m1, m1], nxyz))
+      sphere2.position = add(sphere2.position, mul([m2, m2, m2], nxyz))
 
-      sphere1.illumination = sphere2.illumination = 0.999;
+      sphere1.illumination = sphere2.illumination = 0.999
     }
   }
 
   function update(dt) {
-    analyser.getByteFrequencyData(fftDataArray);
-    state.audio.beat = fftDataArray[state.audio.offset];
+    // Slowing and speeding up the time based on beat
+    analyser.getByteFrequencyData(fftDataArray)
+    state.audio.beat = fftDataArray[state.audio.offset]
+    dt = 0.5 * dt + (dt * state.audio.beat) / 32
 
-    dt = 0.5 * dt + (dt * state.audio.beat) / 32;
-
+    // Gravity & fading the illuminated spheres over time
     state.spheres.objects.map((sphere) => {
       sphere.illumination = Math.max(
         0,
         sphere.illumination - 6 * dt * (1 - sphere.illumination)
-      );
-      sphere.velocity = add(sphere.velocity, mul(state.gravity, [dt, dt, dt]));
-      sphere.position = add(
-        sphere.position,
-        mul(sphere.velocity, [dt, dt, dt])
-      );
-    });
+      )
+      sphere.velocity = add(sphere.velocity, mul(state.gravity, [dt, dt, dt]))
+      sphere.position = add(sphere.position, mul(sphere.velocity, [dt, dt, dt]))
+    })
 
-    for (let i = 0; i < state.spheres.objects.length; i++) {
-      for (let j = i + 1; j < state.spheres.objects.length; j++) {
-        handleCollisions(state.spheres.objects[i], state.spheres.objects[j]);
-      }
-    }
+    // Spheres colliding with each other
+    for (i = 0; i < SPHERES; i++)
+      for (j = i + 1; j < SPHERES; j++)
+        collisions(state.spheres.objects[i], state.spheres.objects[j])
 
+    // Collisions with walls
     state.spheres.objects.forEach((sphere) => {
-      const boxWidth = state.box.size;
-      const boxHeight = state.box.size * 2;
-      const y = state.box.y;
-
-      const dampening = 0.8;
-
-      if (sphere.position[0] - sphere.radius < -boxWidth) {
-        sphere.velocity[0] = -sphere.velocity[0] * dampening;
-        sphere.position[0] = -boxWidth + sphere.radius;
-        sphere.illumination = 0.99;
+      for (i = 0; i < 3; i++) {
+        let min = i == 1 ? state.box.y : -state.box.size,
+          max = i == 1 ? state.box.size * 2 + state.box.y : state.box.size
+        if (sphere.position[i] - sphere.radius < min) {
+          sphere.velocity[i] = -sphere.velocity[i] * DAMPENING
+          sphere.position[i] = min + sphere.radius
+          sphere.illumination = 0.99
+        }
+        if (sphere.position[i] + sphere.radius > max) {
+          sphere.velocity[i] = -sphere.velocity[i] * DAMPENING
+          sphere.position[i] = max - sphere.radius
+          sphere.illumination = 0.99
+        }
       }
-
-      if (sphere.position[0] + sphere.radius > boxWidth) {
-        sphere.velocity[0] = -sphere.velocity[0] * dampening;
-        sphere.position[0] = boxWidth - sphere.radius;
-        sphere.illumination = 0.99;
-      }
-
-      if (sphere.position[1] - sphere.radius < y) {
-        sphere.velocity[1] = -sphere.velocity[1] * dampening;
-        sphere.position[1] = sphere.radius + y;
-        sphere.illumination = 0.99;
-      }
-
-      if (sphere.position[1] + sphere.radius > boxHeight + y) {
-        sphere.velocity[1] = -sphere.velocity[1] * dampening;
-        sphere.position[1] = boxHeight - sphere.radius + y;
-        sphere.illumination = 0.99;
-      }
-
-      if (sphere.position[2] - sphere.radius < -boxWidth) {
-        sphere.velocity[2] = -sphere.velocity[2] * dampening;
-        sphere.position[2] = -boxWidth + sphere.radius;
-        sphere.illumination = 0.99;
-      }
-
-      if (sphere.position[2] + sphere.radius > boxWidth) {
-        sphere.velocity[2] = -sphere.velocity[2] * dampening;
-        sphere.position[2] = boxWidth - sphere.radius;
-        sphere.illumination = 0.99;
-      }
-    });
+    })
   }
 
   function render() {
-    state.now = performance.now() - state.epoch;
-    const dt = (state.now - state.lastRenderTime) / 1000;
-    state.lastRenderTime = state.now;
+    state.now = performance.now() - state.epoch
+    const dt = (state.now - state.lastRenderTime) / 1000
+    state.lastRenderTime = state.now
 
     if (state.halt) {
-      return;
+      return
     }
 
-    update(dt);
+    update(dt)
 
     try {
       if (
         window.innerWidth != state.resolution.x ||
         window.innerHeight != state.resolution.y
       ) {
-        state.resolution.x = window.innerWidth;
-        state.resolution.y = window.innerHeight;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        state.resolution.x = window.innerWidth
+        state.resolution.y = window.innerHeight
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
       }
 
-      gl.viewport(0, 0, state.resolution.x, state.resolution.y);
-      gl.clearColor(0, 0, 0, 1);
-      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.viewport(0, 0, state.resolution.x, state.resolution.y)
+      gl.clearColor(0, 0, 0, 1)
+      gl.clear(gl.COLOR_BUFFER_BIT)
 
-      gl.useProgram(program);
+      gl.useProgram(program)
 
-      gl.uniform1f(gl.getUniformLocation(program, "u_time"), state.now);
-      gl.uniform1f(gl.getUniformLocation(program, "u_beat"), state.audio.beat);
+      gl.uniform1f(gl.getUniformLocation(program, 'u_time'), state.now)
+      gl.uniform1f(gl.getUniformLocation(program, 'u_beat'), state.audio.beat)
       gl.uniform2f(
-        gl.getUniformLocation(program, "u_resolution"),
+        gl.getUniformLocation(program, 'u_resolution'),
         state.resolution.x,
         state.resolution.y
-      );
-      gl.uniform1f(gl.getUniformLocation(program, "u_fov"), state.camera.fov);
+      )
+      gl.uniform1f(gl.getUniformLocation(program, 'u_fov'), state.camera.fov)
       gl.uniform3f(
-        gl.getUniformLocation(program, "u_camera"),
+        gl.getUniformLocation(program, 'u_camera'),
         state.camera.position.x,
         state.camera.position.y,
         state.camera.position.z
-      );
+      )
       gl.uniform3f(
-        gl.getUniformLocation(program, "u_target"),
+        gl.getUniformLocation(program, 'u_target'),
         state.camera.target.x,
         state.camera.target.y,
         state.camera.target.z
-      );
+      )
       gl.uniform3f(
-        gl.getUniformLocation(program, "u_sun"),
+        gl.getUniformLocation(program, 'u_sun'),
         state.sun.x,
         state.sun.y,
         state.sun.z
-      );
+      )
       gl.uniform3f(
-        gl.getUniformLocation(program, "u_fog_color"),
+        gl.getUniformLocation(program, 'u_fog_color'),
         state.fog.color[0] / 255,
         state.fog.color[1] / 255,
         state.fog.color[2] / 255
-      );
+      )
       gl.uniform1f(
-        gl.getUniformLocation(program, "u_fog_intensity"),
+        gl.getUniformLocation(program, 'u_fog_intensity'),
         state.fog.intensity
-      );
+      )
       gl.uniform3f(
-        gl.getUniformLocation(program, "u_sky_color"),
+        gl.getUniformLocation(program, 'u_sky_color'),
         state.sky.color[0] / 255,
         state.sky.color[1] / 255,
         state.sky.color[2] / 255
-      );
+      )
       gl.uniform3f(
-        gl.getUniformLocation(program, "u_color_shift"),
+        gl.getUniformLocation(program, 'u_color_shift'),
         state.colorShift.colorShift[0] / 255,
         state.colorShift.colorShift[1] / 255,
         state.colorShift.colorShift[2] / 255
-      );
+      )
 
       gl.uniform4fv(
-        gl.getUniformLocation(program, "u_spheres"),
+        gl.getUniformLocation(program, 'u_spheres'),
         state.spheres.objects.flatMap((s) => [
           ...s.position,
-          // w component carries radius in integer part, illumination in fraction part
-          s.radius + s.illumination,
+          // w component of vec4 carries radius in its integer part,
+          // illumination in the fraction part
+          s.radius + s.illumination
         ])
-      );
+      )
 
-      gl.uniform1f(gl.getUniformLocation(program, "u_box_y"), state.box.y);
-      gl.uniform1f(
-        gl.getUniformLocation(program, "u_box_size"),
-        state.box.size
-      );
+      gl.uniform1f(gl.getUniformLocation(program, 'u_box_y'), state.box.y)
+      gl.uniform1f(gl.getUniformLocation(program, 'u_box_size'), state.box.size)
 
       gl.uniform3f(
-        gl.getUniformLocation(program, "u_palette_a"),
-        state.palette.a[0] / 255,
-        state.palette.a[1] / 255,
-        state.palette.a[2] / 255
-      );
+        gl.getUniformLocation(program, 'u_palette_a'),
+        ...div(state.palette.a, 255)
+      )
       gl.uniform3f(
-        gl.getUniformLocation(program, "u_palette_b"),
-        state.palette.b[0] / 255,
-        state.palette.b[1] / 255,
-        state.palette.b[2] / 255
-      );
+        gl.getUniformLocation(program, 'u_palette_b'),
+        ...div(state.palette.b, 255)
+      )
       gl.uniform3f(
-        gl.getUniformLocation(program, "u_palette_c"),
-        state.palette.c[0] / 255,
-        state.palette.c[1] / 255,
-        state.palette.c[2] / 255
-      );
+        gl.getUniformLocation(program, 'u_palette_c'),
+        ...div(state.palette.c, 255)
+      )
       gl.uniform3f(
-        gl.getUniformLocation(program, "u_palette_d"),
-        state.palette.d[0] / 255,
-        state.palette.d[1] / 255,
-        state.palette.d[2] / 255
-      );
+        gl.getUniformLocation(program, 'u_palette_d'),
+        ...div(state.palette.d, 255)
+      )
       gl.uniform1f(
-        gl.getUniformLocation(program, "u_palette_offset"),
+        gl.getUniformLocation(program, 'u_palette_offset'),
         state.palette.offset
-      );
+      )
       gl.uniform1f(
-        gl.getUniformLocation(program, "u_palette_range"),
+        gl.getUniformLocation(program, 'u_palette_range'),
         state.palette.range
-      );
+      )
       gl.uniform1f(
-        gl.getUniformLocation(program, "u_palette_period"),
+        gl.getUniformLocation(program, 'u_palette_period'),
         state.palette.period
-      );
+      )
 
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 
-      window.requestAnimationFrame(render);
+      window.requestAnimationFrame(render)
     } catch (err) {
-      console.log(err);
-      alert("Error: " + err.message);
+      console.log(err)
+      alert('Error: ' + err.message)
     }
   }
 
-  init();
-};
+  init()
+}
 
 const setupDebugUI = () => {
-  gui = new dat.GUI();
+  gui = new dat.GUI()
 
-  const generalFolder = gui.addFolder("General");
-  generalFolder.add(state, "halt").listen();
-  generalFolder.add(state, "now", 0, 100000, 1).listen();
-  generalFolder.add(state.box, "y", -30, 100, 0.01).listen();
-  generalFolder.add(state.box, "size", 0, 100, 0.01).listen();
-  generalFolder.addColor(state.colorShift, "colorShift");
+  const generalFolder = gui.addFolder('General')
+  generalFolder.add(state, 'halt').listen()
+  generalFolder.add(state, 'now', 0, 100000, 1).listen()
+  generalFolder.add(state.box, 'y', -30, 100, 0.01).listen()
+  generalFolder.add(state.box, 'size', 0, 100, 0.01).listen()
+  generalFolder.addColor(state.colorShift, 'colorShift')
 
-  const gravityFolder = gui.addFolder("Gravity");
-  gravityFolder.add(state.gravity, "0", -10, 10, 0.01).listen();
-  gravityFolder.add(state.gravity, "1", -10, 10, 0.01).listen();
-  gravityFolder.add(state.gravity, "2", -10, 10, 0.01).listen();
+  const gravityFolder = gui.addFolder('Gravity')
+  gravityFolder.add(state.gravity, '0', -10, 10, 0.01).listen()
+  gravityFolder.add(state.gravity, '1', -10, 10, 0.01).listen()
+  gravityFolder.add(state.gravity, '2', -10, 10, 0.01).listen()
 
-  const cameraFolder = gui.addFolder("Camera");
-  cameraFolder.add(state.camera, "fov", -180, 180, 0.1);
-  const cameraPositionFolder = cameraFolder.addFolder("Position");
-  cameraPositionFolder
-    .add(state.camera.position, "x", -100, 100, 0.01)
-    .listen();
-  cameraPositionFolder.add(state.camera.position, "y", 0.5, 100, 0.01).listen();
-  cameraPositionFolder
-    .add(state.camera.position, "z", -100, 100, 0.01)
-    .listen();
-  const cameraTargetFolder = cameraFolder.addFolder("Target");
-  cameraTargetFolder.add(state.camera.target, "x", -100, 100, 0.01).listen();
-  cameraTargetFolder.add(state.camera.target, "y", -100, 100, 0.01).listen();
-  cameraTargetFolder.add(state.camera.target, "z", -100, 100, 0.01).listen();
+  const cameraFolder = gui.addFolder('Camera')
+  cameraFolder.add(state.camera, 'fov', -180, 180, 0.1)
+  const cameraPositionFolder = cameraFolder.addFolder('Position')
+  cameraPositionFolder.add(state.camera.position, 'x', -100, 100, 0.01).listen()
+  cameraPositionFolder.add(state.camera.position, 'y', 0.5, 100, 0.01).listen()
+  cameraPositionFolder.add(state.camera.position, 'z', -100, 100, 0.01).listen()
+  const cameraTargetFolder = cameraFolder.addFolder('Target')
+  cameraTargetFolder.add(state.camera.target, 'x', -100, 100, 0.01).listen()
+  cameraTargetFolder.add(state.camera.target, 'y', -100, 100, 0.01).listen()
+  cameraTargetFolder.add(state.camera.target, 'z', -100, 100, 0.01).listen()
 
-  const paletteFolder = gui.addFolder("Palette");
-  paletteFolder.addColor(state.palette, "a");
-  paletteFolder.addColor(state.palette, "b");
-  paletteFolder.addColor(state.palette, "c");
-  paletteFolder.addColor(state.palette, "d");
-  paletteFolder.add(state.palette, "offset", 0.0, 1.0, 0.05);
-  paletteFolder.add(state.palette, "range", 0.0, 1.0, 0.05);
-  paletteFolder.add(state.palette, "period", 0.0, 100, 0.1);
+  const paletteFolder = gui.addFolder('Palette')
+  paletteFolder.addColor(state.palette, 'a')
+  paletteFolder.addColor(state.palette, 'b')
+  paletteFolder.addColor(state.palette, 'c')
+  paletteFolder.addColor(state.palette, 'd')
+  paletteFolder.add(state.palette, 'offset', 0.0, 1.0, 0.05)
+  paletteFolder.add(state.palette, 'range', 0.0, 1.0, 0.05)
+  paletteFolder.add(state.palette, 'period', 0.0, 100, 0.1)
 
-  const skyFolder = gui.addFolder("Sky");
-  skyFolder.addColor(state.sky, "color");
+  const skyFolder = gui.addFolder('Sky')
+  skyFolder.addColor(state.sky, 'color')
 
-  const fogFolder = skyFolder.addFolder("Fog");
-  fogFolder.add(state.fog, "intensity", 0, 0.2, 0.001);
-  fogFolder.addColor(state.fog, "color");
+  const fogFolder = skyFolder.addFolder('Fog')
+  fogFolder.add(state.fog, 'intensity', 0, 0.2, 0.001)
+  fogFolder.addColor(state.fog, 'color')
 
-  const sunFolder = skyFolder.addFolder("Sun");
-  sunFolder.add(state.sun, "x", -100, 100, 0.01).listen();
-  sunFolder.add(state.sun, "y", -100, 100, 0.01).listen();
-  sunFolder.add(state.sun, "z", -100, 100, 0.01).listen();
+  const sunFolder = skyFolder.addFolder('Sun')
+  sunFolder.add(state.sun, 'x', -100, 100, 0.01).listen()
+  sunFolder.add(state.sun, 'y', -100, 100, 0.01).listen()
+  sunFolder.add(state.sun, 'z', -100, 100, 0.01).listen()
 
-  const beatFolder = gui.addFolder("Audio");
-  beatFolder.add(state.audio, "beat", 0.0, 255, 1).listen();
-  beatFolder.add(state.audio, "offset", 0, 127, 1).listen();
-};
+  const beatFolder = gui.addFolder('Audio')
+  beatFolder.add(state.audio, 'beat', 0.0, 255, 1).listen()
+  beatFolder.add(state.audio, 'offset', 0, 127, 1).listen()
+}

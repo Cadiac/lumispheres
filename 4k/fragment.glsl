@@ -177,7 +177,7 @@ Surface scene(in vec3 p) {
   return surface;
 }
 
-vec3 sky(in vec3 camera, in vec3 dir, in vec3 sunDir) {
+vec3 sky(in vec3 camera, in vec3 dir) {
   // Deeper blue when looking up
   vec3 color = u_sky_color - .5 * dir.y;
 
@@ -185,12 +185,6 @@ vec3 sky(in vec3 camera, in vec3 dir, in vec3 sunDir) {
   float dist = (25000. - camera.y) / dir.y;
   vec3 e = exp2(-abs(dist) * .00001 * u_color_shift);
   color = color * e + (1.0 - e) * u_fog_color;
-
-  // Sun
-  float dotSun = dot(sunDir, dir);
-  if (dotSun > .9999) {
-    color = vec3(0.9);
-  }
 
   return color;
 }
@@ -338,6 +332,10 @@ mat4 lookAt(vec3 camera, vec3 target, vec3 up) {
 }
 
 vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
+  // mat4 viewToWorld =
+  //     lookAt(u_camera, u_target,
+  //            normalize(vec3(sin(u_time / 10000.), cos(u_time / 10000.),
+  //            0.)));
   mat4 viewToWorld = lookAt(camera, target, normalize(vec3(0., 1., 0.)));
 
   vec3 viewDir = normalize(vec3(xy, -z));
@@ -357,7 +355,7 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
     Ray ray = rayMarch(camera, rayDir);
 
     if (!ray.is_hit) {
-      color = mix(color, sky(camera, rayDir, sunDir), fresnel);
+      color = mix(color, sky(camera, rayDir), fresnel);
       float glare = clamp(dot(sunDir, rayDir), 0.0, 1.0);
       color += 0.5 * vec3(1., .5, .2) * pow(glare, 32.0);
       break;
@@ -365,20 +363,16 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
     rayDist += ray.surface.dist;
 
     vec3 normal;
-    if (ray.surface.id == FLOOR_BOTTOM) {
-      normal = vec3(.0, 1., 0.);
-    } else if (ray.surface.id == FLOOR_TOP) {
-      normal = vec3(.0, -1., 0.);
-    } else if (ray.surface.id == FLOOR_LEFT) {
-      normal = vec3(-1., 0., 0.);
-    } else if (ray.surface.id == FLOOR_RIGHT) {
-      normal = vec3(1., 0., 0.);
-    } else if (ray.surface.id == FLOOR_BACK) {
-      normal = vec3(0., 0., 1.);
-    } else if (ray.surface.id == FLOOR_FRONT) {
-      normal = vec3(0., 0., -1.);
-    } else if (ray.surface.id >= SPHERE) {
+    if (ray.surface.id >= SPHERE) {
       normal = normalize(ray.pos - currentSphere.xyz);
+    } else {
+      normal = ray.surface.id == FLOOR_BOTTOM  ? vec3(0., 1., 0.)
+               : ray.surface.id == FLOOR_TOP   ? vec3(0., -1., 0.)
+               : ray.surface.id == FLOOR_LEFT  ? vec3(-1., 0., 0.)
+               : ray.surface.id == FLOOR_RIGHT ? vec3(1., 0., 0.)
+               : ray.surface.id == FLOOR_BACK
+                   ? vec3(0., 0., 1.)
+                   : vec3(0., 0., -1.); // FLOOR_FRONT as default
     }
 
     vec3 light = shade(ray.pos, rayDir, normal, ray.surface.id);
@@ -388,9 +382,7 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
     // Fog
     vec3 fog = exp2(-rayDist * u_fog_intensity * u_color_shift);
 
-    if (ray.surface.id >= SPHERE || ray.surface.id == FLOOR_LEFT ||
-        ray.surface.id == FLOOR_RIGHT || ray.surface.id == FLOOR_BACK ||
-        ray.surface.id == FLOOR_TOP || ray.surface.id == FLOOR_FRONT) {
+    if (ray.surface.id != FLOOR_BOTTOM) {
       color = color * fog + (1. - fog) * u_fog_color;
       break;
     }
@@ -427,13 +419,9 @@ void main() {
 
   vec3 sunDir = normalize(u_sun);
 
-  // mat4 viewToWorld =
-  //     lookAt(u_camera, u_target,
-  //            normalize(vec3(sin(u_time / 10000.), cos(u_time / 10000.),
-  //            0.)));
-
   vec3 color = render(u_camera, u_target, sunDir, xy, z);
 
+  // Do I actually want these?
   color = pow(color, u_color_shift);
   color *= vec3(1.02, 0.99, 0.9);
   color.z = color.z + 0.1;

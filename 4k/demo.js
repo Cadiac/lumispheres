@@ -299,7 +299,7 @@ class Sphere {
   }
 }
 
-let running = false;
+running = false;
 
 const run = async (audioCtx, analyser) => {
   if (running) {
@@ -310,121 +310,14 @@ const run = async (audioCtx, analyser) => {
 
   player = new CPlayer();
   audioCtx = new AudioContext();
-
-  const t0 = new Date();
-
   player.init(song);
-
-  state = {
-    halt: false,
-    epoch: performance.now(),
-    frame: 0,
-    now: 0,
-    dt: 0,
-    lastRenderTime: 0,
-    resolution: {
-      x: 0,
-      y: 0,
-    },
-    gravity: {
-      x: 0.0,
-      y: 0.0,
-      z: 0.0,
-    },
-    camera: {
-      stop: false,
-      fov: 60,
-      position: {
-        x: 0,
-        y: 20,
-        z: 60,
-      },
-      target: {
-        x: 0,
-        y: 20,
-        z: 0,
-      },
-    },
-    sun: {
-      x: -1.23,
-      y: 2,
-      z: -100,
-    },
-    fog: {
-      color: [230, 97, 205],
-      intensity: 0.005,
-    },
-    sky: {
-      color: [61, 245, 245],
-    },
-    colorShift: {
-      colorShift: [255, 235, 255],
-    },
-    palette: {
-      a: [95, 28, 28],
-      b: [174, 74, 74],
-      c: [9, 9, 203],
-      d: [48, 40, 40],
-
-      // Pinkish
-      // a: [155, 155, 155],
-      // b: [174, 74, 74],
-      // c: [9, 9, 203],
-      // d: [173, 102, 102],
-
-      offset: 0.0,
-      range: 1.0,
-      period: 10,
-    },
-    spheres: {
-      objects: [
-        ...[...Array(5)].map(
-          (o) =>
-            new Sphere(
-              -5 + 5 * Math.random(),
-              20 + 5 * Math.random(),
-              5 + 5 * Math.random(),
-              1
-            )
-        ),
-        ...[...Array(3)].map(
-          (o) =>
-            new Sphere(
-              -5 + 5 * Math.random(),
-              20 + 5 * Math.random(),
-              5 + 5 * Math.random(),
-              2
-            )
-        ),
-        ...[...Array(5)].map(
-          (o) =>
-            new Sphere(
-              -5 + 5 * Math.random(),
-              20 + 5 * Math.random(),
-              5 + 5 * Math.random(),
-              3
-            )
-        ),
-      ],
-    },
-    box: {
-      y: 10,
-      size: 10,
-    },
-    audio: {
-      offset: 22,
-      beat: 0,
-    },
-  };
 
   document.addEventListener(
     "keydown",
     (e) => {
       if (e.key === "Escape") {
         state.halt = !state.halt;
-      }
-      if (e.key === " ") {
-        state.camera.stop = !state.camera.stop;
+        audioCtx.close();
       }
     },
     true
@@ -435,7 +328,6 @@ const run = async (audioCtx, analyser) => {
     res.text()
   );
 
-  const programs = [];
 
   const canvas = document.createElement("canvas");
   document.body.appendChild(canvas);
@@ -443,20 +335,14 @@ const run = async (audioCtx, analyser) => {
   canvas.style.left = canvas.style.top = 0;
 
   const gl = canvas.getContext("webgl");
-  const gui = new dat.GUI();
 
   function init() {
     if (player.generate() >= 1) {
-      const t1 = new Date();
-      console.log("done (" + (t1 - t0) + "ms)");
-
-      // Put the generated song in an Audio element.
       const wave = player.createWave();
       const audio = document.createElement("audio");
       audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
       audio.onplay = () => audioCtx.resume();
 
-      // Create an analyser
       analyser = audioCtx.createAnalyser();
       const source = audioCtx.createMediaElementSource(audio);
 
@@ -473,8 +359,7 @@ const run = async (audioCtx, analyser) => {
           return;
         }
 
-        const program = gl.createProgram();
-        programs[0] = program;
+        program = gl.createProgram();
 
         let shader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(shader, vertexShader);
@@ -509,65 +394,109 @@ const run = async (audioCtx, analyser) => {
         gl.enableVertexAttribArray(0);
         gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-        const generalFolder = gui.addFolder("General");
-        generalFolder.add(state, "halt").listen();
-        generalFolder.add(state, "now", 0, 100000, 1).listen();
-        generalFolder.add(state.box, "y", -30, 100, 0.01).listen();
-        generalFolder.add(state.box, "size", 0, 100, 0.01).listen();
-        generalFolder.addColor(state.colorShift, "colorShift");
+        state = {
+          halt: false,
+          epoch: performance.now(),
+          now: 0,
+          dt: 0,
+          lastRenderTime: 0,
+          resolution: {
+            x: 0,
+            y: 0,
+          },
+          gravity: {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+          },
+          camera: {
+            fov: 60,
+            position: {
+              x: 0,
+              y: 20,
+              z: 60,
+            },
+            target: {
+              x: 0,
+              y: 20,
+              z: 0,
+            },
+          },
+          sun: {
+            x: -1.23,
+            y: 2,
+            z: -100,
+          },
+          fog: {
+            color: [230, 97, 205],
+            intensity: 0.005,
+          },
+          sky: {
+            color: [61, 245, 245],
+          },
+          colorShift: {
+            colorShift: [255, 235, 255],
+          },
+          palette: {
+            a: [95, 28, 28],
+            b: [174, 74, 74],
+            c: [9, 9, 203],
+            d: [48, 40, 40],
 
-        const gravityFolder = gui.addFolder("Gravity");
-        gravityFolder.add(state.gravity, "x", -10, 10, 0.01).listen();
-        gravityFolder.add(state.gravity, "y", -10, 10, 0.01).listen();
-        gravityFolder.add(state.gravity, "z", -10, 10, 0.01).listen();
+            // Pinkish
+            // a: [155, 155, 155],
+            // b: [174, 74, 74],
+            // c: [9, 9, 203],
+            // d: [173, 102, 102],
 
-        const cameraFolder = gui.addFolder("Camera");
-        cameraFolder.add(state.camera, "fov", -180, 180, 0.1);
-        const cameraPositionFolder = cameraFolder.addFolder("Position");
-        cameraPositionFolder
-          .add(state.camera.position, "x", -100, 100, 0.01)
-          .listen();
-        cameraPositionFolder
-          .add(state.camera.position, "y", 0.5, 100, 0.01)
-          .listen();
-        cameraPositionFolder
-          .add(state.camera.position, "z", -100, 100, 0.01)
-          .listen();
-        const cameraTargetFolder = cameraFolder.addFolder("Target");
-        cameraTargetFolder
-          .add(state.camera.target, "x", -100, 100, 0.01)
-          .listen();
-        cameraTargetFolder
-          .add(state.camera.target, "y", -100, 100, 0.01)
-          .listen();
-        cameraTargetFolder
-          .add(state.camera.target, "z", -100, 100, 0.01)
-          .listen();
+            offset: 0.0,
+            range: 1.0,
+            period: 10,
+          },
+          spheres: {
+            objects: [
+              ...[...Array(5)].map(
+                (o) =>
+                  new Sphere(
+                    -5 + 5 * Math.random(),
+                    20 + 5 * Math.random(),
+                    5 + 5 * Math.random(),
+                    1
+                  )
+              ),
+              ...[...Array(3)].map(
+                (o) =>
+                  new Sphere(
+                    -5 + 5 * Math.random(),
+                    20 + 5 * Math.random(),
+                    5 + 5 * Math.random(),
+                    2
+                  )
+              ),
+              ...[...Array(5)].map(
+                (o) =>
+                  new Sphere(
+                    -5 + 5 * Math.random(),
+                    20 + 5 * Math.random(),
+                    5 + 5 * Math.random(),
+                    3
+                  )
+              ),
+            ],
+          },
+          box: {
+            y: 10,
+            size: 10,
+          },
+          audio: {
+            offset: 90, // Hihat
+            // offset: 6, // bass
+            // offset: 22, // generic
+            beat: 0,
+          },
+        };
 
-        const paletteFolder = gui.addFolder("Palette");
-        paletteFolder.addColor(state.palette, "a");
-        paletteFolder.addColor(state.palette, "b");
-        paletteFolder.addColor(state.palette, "c");
-        paletteFolder.addColor(state.palette, "d");
-        paletteFolder.add(state.palette, "offset", 0.0, 1.0, 0.05);
-        paletteFolder.add(state.palette, "range", 0.0, 1.0, 0.05);
-        paletteFolder.add(state.palette, "period", 0.0, 100, 0.1);
-
-        const skyFolder = gui.addFolder("Sky");
-        skyFolder.addColor(state.sky, "color");
-
-        const fogFolder = skyFolder.addFolder("Fog");
-        fogFolder.add(state.fog, "intensity", 0, 0.2, 0.001);
-        fogFolder.addColor(state.fog, "color");
-
-        const sunFolder = skyFolder.addFolder("Sun");
-        sunFolder.add(state.sun, "x", -100, 100, 0.01).listen();
-        sunFolder.add(state.sun, "y", -100, 100, 0.01).listen();
-        sunFolder.add(state.sun, "z", -100, 100, 0.01).listen();
-
-        const beatFolder = gui.addFolder("Audio");
-        beatFolder.add(state.audio, "beat", 0.0, 255, 1).listen();
-        beatFolder.add(state.audio, "offset", 0, 127, 1).listen();
+        setupDebugUI();
 
         window.requestAnimationFrame(render);
       } catch (err) {
@@ -643,18 +572,13 @@ const run = async (audioCtx, analyser) => {
   function update(dt) {
     analyser.getByteFrequencyData(fftDataArray);
     state.audio.beat = fftDataArray[state.audio.offset];
-    // state.box.size = 10 + state.audio.beat / 64;
 
-    // state.gravity.y = Math.sin(state.now / 1000) - 0.5;
-    // state.gravity.x = -Math.sin(state.now / 10000);
-    // state.gravity.y = -Math.cos(state.now / 10000);
+    dt = 0.5 * dt + dt * state.audio.beat / 32;
 
     state.spheres.objects.forEach((sphere, i) => {
-      // sphere.illumination = Math.cos((i * 1000 + state.now) / 1000) / 2 + 0.5;
-
       sphere.illumination = Math.max(
         0,
-        sphere.illumination - 3 * dt * (1 - sphere.illumination)
+        sphere.illumination - 6 * dt * (1 - sphere.illumination)
       );
 
       sphere.updatePosition(dt, state.gravity);
@@ -701,7 +625,6 @@ const run = async (audioCtx, analyser) => {
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
 
-      const program = programs[0];
       gl.useProgram(program);
 
       gl.uniform1f(gl.getUniformLocation(program, "u_time"), state.now);
@@ -801,17 +724,12 @@ const run = async (audioCtx, analyser) => {
         state.palette.period
       );
 
-      // Draw to frame buffer texture
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
       gl.viewport(0, 0, state.resolution.x, state.resolution.y);
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
 
-      // Draw
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-      state.frame += 1;
       window.requestAnimationFrame(render);
     } catch (err) {
       console.log(err);
@@ -820,4 +738,60 @@ const run = async (audioCtx, analyser) => {
   }
 
   init();
+};
+
+const setupDebugUI = () => {
+  gui = new dat.GUI();
+
+  const generalFolder = gui.addFolder("General");
+  generalFolder.add(state, "halt").listen();
+  generalFolder.add(state, "now", 0, 100000, 1).listen();
+  generalFolder.add(state.box, "y", -30, 100, 0.01).listen();
+  generalFolder.add(state.box, "size", 0, 100, 0.01).listen();
+  generalFolder.addColor(state.colorShift, "colorShift");
+
+  const gravityFolder = gui.addFolder("Gravity");
+  gravityFolder.add(state.gravity, "x", -10, 10, 0.01).listen();
+  gravityFolder.add(state.gravity, "y", -10, 10, 0.01).listen();
+  gravityFolder.add(state.gravity, "z", -10, 10, 0.01).listen();
+
+  const cameraFolder = gui.addFolder("Camera");
+  cameraFolder.add(state.camera, "fov", -180, 180, 0.1);
+  const cameraPositionFolder = cameraFolder.addFolder("Position");
+  cameraPositionFolder
+    .add(state.camera.position, "x", -100, 100, 0.01)
+    .listen();
+  cameraPositionFolder.add(state.camera.position, "y", 0.5, 100, 0.01).listen();
+  cameraPositionFolder
+    .add(state.camera.position, "z", -100, 100, 0.01)
+    .listen();
+  const cameraTargetFolder = cameraFolder.addFolder("Target");
+  cameraTargetFolder.add(state.camera.target, "x", -100, 100, 0.01).listen();
+  cameraTargetFolder.add(state.camera.target, "y", -100, 100, 0.01).listen();
+  cameraTargetFolder.add(state.camera.target, "z", -100, 100, 0.01).listen();
+
+  const paletteFolder = gui.addFolder("Palette");
+  paletteFolder.addColor(state.palette, "a");
+  paletteFolder.addColor(state.palette, "b");
+  paletteFolder.addColor(state.palette, "c");
+  paletteFolder.addColor(state.palette, "d");
+  paletteFolder.add(state.palette, "offset", 0.0, 1.0, 0.05);
+  paletteFolder.add(state.palette, "range", 0.0, 1.0, 0.05);
+  paletteFolder.add(state.palette, "period", 0.0, 100, 0.1);
+
+  const skyFolder = gui.addFolder("Sky");
+  skyFolder.addColor(state.sky, "color");
+
+  const fogFolder = skyFolder.addFolder("Fog");
+  fogFolder.add(state.fog, "intensity", 0, 0.2, 0.001);
+  fogFolder.addColor(state.fog, "color");
+
+  const sunFolder = skyFolder.addFolder("Sun");
+  sunFolder.add(state.sun, "x", -100, 100, 0.01).listen();
+  sunFolder.add(state.sun, "y", -100, 100, 0.01).listen();
+  sunFolder.add(state.sun, "z", -100, 100, 0.01).listen();
+
+  const beatFolder = gui.addFolder("Audio");
+  beatFolder.add(state.audio, "beat", 0.0, 255, 1).listen();
+  beatFolder.add(state.audio, "offset", 0, 127, 1).listen();
 };

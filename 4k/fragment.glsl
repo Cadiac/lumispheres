@@ -441,8 +441,8 @@ void main() {
   color = smoothstep(0.0, 1.0, color);
 
   // Fade in
-  if (u_time < 1000.) {
-    color = mix(color, vec3(0.), (1000. - u_time) / 1000.);
+  if (u_time < 2000.) {
+    color = mix(color, vec3(0.), (2000. - u_time) / 2000.);
   }
 
   gl_FragColor = vec4(color, 1.0);

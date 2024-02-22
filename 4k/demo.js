@@ -229,11 +229,11 @@ function CPlayer() {
 add = (a, b) => a.map((v, i) => v + b[i]);
 sub = (a, b) => a.map((v, i) => v - b[i]);
 mul = (a, b) => a.map((v, i) => v * b[i]);
-div = (a, s) => a.map(v => v / s);
+div = (a, s) => a.map((v) => v / s);
 sum = (a) => a.reduce((v, i) => v + i);
 
 const Sphere = (x, y, z, radius) => ({
-  position: [x,y,z],
+  position: [x, y, z],
   velocity: [-0.5 + Math.random(), -0.5 + Math.random(), -0.5 + Math.random()],
   illumination: 0,
   radius,
@@ -440,39 +440,6 @@ const run = async (audioCtx, analyser) => {
     }
   }
 
-  // function handleCollisions(s1, s2) {
-  //   dx = s2.position.x - s1.position.x;
-  //   dy = s2.position.y - s1.position.y;
-  //   dz = s2.position.z - s1.position.z;
-  //   d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-  //   o = s1.r + s2.r - d;
-  //   if (o > 0) {
-  //     nx = dx / d;
-  //     ny = dy / d;
-  //     nz = dz / d;
-  //     v1i = s1.velocity.x * nx + s1.velocity.y * ny + s1.velocity.z * nz;
-  //     v2i = s2.velocity.x * nx + s2.velocity.y * ny + s2.velocity.z * nz;
-  //     m = s1.mass + s2.mass;
-  //     v1f = (v1i * (s1.mass - s2.mass) + 2 * s2.mass * v2i) / m;
-  //     v2f = (v2i * (s2.mass - s1.mass) + 2 * s1.mass * v1i) / m;
-  //     s1.velocity.x += (v1f - v1i) * nx;
-  //     s1.velocity.y += (v1f - v1i) * ny;
-  //     s1.velocity.z += (v1f - v1i) * nz;
-  //     s2.velocity.x += (v2f - v2i) * nx;
-  //     s2.velocity.y += (v2f - v2i) * ny;
-  //     s2.velocity.z += (v2f - v2i) * nz;
-  //     moveA = o * (s2.mass / m);
-  //     moveB = o * (s1.mass / m);
-  //     s1.position.x -= moveA * nx;
-  //     s1.position.y -= moveA * ny;
-  //     s1.position.z -= moveA * nz;
-  //     s2.position.x += moveB * nx;
-  //     s2.position.y += moveB * ny;
-  //     s2.position.z += moveB * nz;
-  //     s1.illumination = s2.illumination = 0.999;
-  //   }
-  // }
-
   function handleCollisions(sphere1, sphere2) {
     [dx, dy, dz] = dxyz = sub(sphere2.position, sphere1.position);
     d = Math.sqrt(dx * dx + dy * dy + dz * dz);
@@ -484,25 +451,24 @@ const run = async (audioCtx, analyser) => {
       v1i = sum(mul(sphere1.velocity, nxyz));
       v2i = sum(mul(sphere2.velocity, nxyz));
 
-      // Calculate the final velocities along the collision line using the conservation of momentum and kinetic energy
       dv1 =
         (v1i * (sphere1.mass - sphere2.mass) + 2 * sphere2.mass * v2i) /
-        (sphere1.mass + sphere2.mass) - v1i
+          (sphere1.mass + sphere2.mass) -
+        v1i;
       dv2 =
         (v2i * (sphere2.mass - sphere1.mass) + 2 * sphere1.mass * v1i) /
-        (sphere1.mass + sphere2.mass) - v2i;
+          (sphere1.mass + sphere2.mass) -
+        v2i;
 
-      // Update the velocities of the spheres
       sphere1.velocity = add(sphere1.velocity, mul([dv1, dv1, dv1], nxyz));
       sphere2.velocity = add(sphere2.velocity, mul([dv2, dv2, dv2], nxyz));
 
-      // Move spheres apart along the line of collision based on their mass
       tm = sphere1.mass + sphere2.mass;
-      m1 = o * (sphere2.mass / tm);
-      m2 = o * (sphere1.mass / tm);
+      m1 = (o * sphere2.mass) / tm;
+      m2 = (o * sphere1.mass) / tm;
 
       sphere1.position = sub(sphere1.position, mul([m1, m1, m1], nxyz));
-      sphere2.position = sub(sphere2.position, mul([m2, m2, m2], nxyz));
+      sphere2.position = add(sphere2.position, mul([m2, m2, m2], nxyz));
 
       sphere1.illumination = sphere2.illumination = 0.999;
     }
@@ -514,13 +480,16 @@ const run = async (audioCtx, analyser) => {
 
     dt = 0.5 * dt + (dt * state.audio.beat) / 32;
 
-    state.spheres.objects.forEach((sphere, i) => {
+    state.spheres.objects.map((sphere) => {
       sphere.illumination = Math.max(
         0,
         sphere.illumination - 6 * dt * (1 - sphere.illumination)
       );
-
-      sphere.position = add(sphere.position, mul(add(state.gravity, sphere.velocity), [dt, dt, dt]));
+      sphere.velocity = add(sphere.velocity, mul(state.gravity, [dt, dt, dt]));
+      sphere.position = add(
+        sphere.position,
+        mul(sphere.velocity, [dt, dt, dt])
+      );
     });
 
     for (let i = 0; i < state.spheres.objects.length; i++) {

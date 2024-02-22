@@ -226,78 +226,21 @@ function CPlayer() {
     });
 }
 
-class Sphere {
-  constructor(x, y, z, radius) {
-    this.position = { x, y, z };
-    this.velocity = {
-      x: -0.5 + Math.random(),
-      y: -0.5 + Math.random(),
-      z: -0.5 + Math.random(),
-    };
-    this.illumination = 0;
-    this.radius = radius;
-    this.mass = (4 / 3) * Math.PI * Math.pow(radius, 3);
-  }
-
-  asVec4f() {
-    return [
-      this.position.x,
-      this.position.y,
-      this.position.z,
-      // w component carries radius in integer part, illumination in fraction part
-      this.radius + this.illumination,
-    ];
-  }
-
-  updatePosition(dt, gravity) {
-    this.velocity.x += gravity.x * dt;
-    this.velocity.y += gravity.y * dt;
-    this.velocity.z += gravity.z * dt;
-    this.position.x += this.velocity.x * dt;
-    this.position.y += this.velocity.y * dt;
-    this.position.z += this.velocity.z * dt;
-  }
-
-  checkWallCollision(boxWidth, boxHeight, y) {
-    const dampening = 0.8;
-
-    if (this.position.x - this.radius < -boxWidth) {
-      this.velocity.x = -this.velocity.x * dampening;
-      this.position.x = -boxWidth + this.radius;
-      this.illumination = 0.99;
-    }
-
-    if (this.position.x + this.radius > boxWidth) {
-      this.velocity.x = -this.velocity.x * dampening;
-      this.position.x = boxWidth - this.radius;
-      this.illumination = 0.99;
-    }
-
-    if (this.position.y - this.radius < y) {
-      this.velocity.y = -this.velocity.y * dampening;
-      this.position.y = this.radius + y;
-      this.illumination = 0.99;
-    }
-
-    if (this.position.y + this.radius > boxHeight + y) {
-      this.velocity.y = -this.velocity.y * dampening;
-      this.position.y = boxHeight - this.radius + y;
-      this.illumination = 0.99;
-    }
-
-    if (this.position.z - this.radius < -boxWidth) {
-      this.velocity.z = -this.velocity.z * dampening;
-      this.position.z = -boxWidth + this.radius;
-      this.illumination = 0.99;
-    }
-
-    if (this.position.z + this.radius > boxWidth) {
-      this.velocity.z = -this.velocity.z * dampening;
-      this.position.z = boxWidth - this.radius;
-      this.illumination = 0.99;
-    }
-  }
-}
+const Sphere = (x, y, z, radius) => ({
+  position: {
+    x,
+    y,
+    z,
+  },
+  velocity: {
+    x: -0.5 + Math.random(),
+    y: -0.5 + Math.random(),
+    z: -0.5 + Math.random(),
+  },
+  illumination: 0,
+  radius,
+  mass: (4 / 3) * Math.PI * Math.pow(radius, 3),
+});
 
 running = false;
 
@@ -328,13 +271,13 @@ const run = async (audioCtx, analyser) => {
     res.text()
   );
 
-
   const canvas = document.createElement("canvas");
   document.body.appendChild(canvas);
   canvas.style.position = "fixed";
   canvas.style.left = canvas.style.top = 0;
 
-  const gl = canvas.getContext("webgl");
+  gl = canvas.getContext("webgl");
+  program = gl.createProgram();
 
   function init() {
     if (player.generate() >= 1) {
@@ -358,8 +301,6 @@ const run = async (audioCtx, analyser) => {
           alert("WebGL canvas is required");
           return;
         }
-
-        program = gl.createProgram();
 
         let shader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(shader, vertexShader);
@@ -455,32 +396,29 @@ const run = async (audioCtx, analyser) => {
           },
           spheres: {
             objects: [
-              ...[...Array(5)].map(
-                (o) =>
-                  new Sphere(
-                    -5 + 5 * Math.random(),
-                    20 + 5 * Math.random(),
-                    5 + 5 * Math.random(),
-                    1
-                  )
+              ...[...Array(5)].map((o) =>
+                Sphere(
+                  -5 + 5 * Math.random(),
+                  20 + 5 * Math.random(),
+                  5 + 5 * Math.random(),
+                  1
+                )
               ),
-              ...[...Array(3)].map(
-                (o) =>
-                  new Sphere(
-                    -5 + 5 * Math.random(),
-                    20 + 5 * Math.random(),
-                    5 + 5 * Math.random(),
-                    2
-                  )
+              ...[...Array(3)].map((o) =>
+                Sphere(
+                  -5 + 5 * Math.random(),
+                  20 + 5 * Math.random(),
+                  5 + 5 * Math.random(),
+                  2
+                )
               ),
-              ...[...Array(5)].map(
-                (o) =>
-                  new Sphere(
-                    -5 + 5 * Math.random(),
-                    20 + 5 * Math.random(),
-                    5 + 5 * Math.random(),
-                    3
-                  )
+              ...[...Array(5)].map((o) =>
+                Sphere(
+                  -5 + 5 * Math.random(),
+                  20 + 5 * Math.random(),
+                  5 + 5 * Math.random(),
+                  3
+                )
               ),
             ],
           },
@@ -573,7 +511,7 @@ const run = async (audioCtx, analyser) => {
     analyser.getByteFrequencyData(fftDataArray);
     state.audio.beat = fftDataArray[state.audio.offset];
 
-    dt = 0.5 * dt + dt * state.audio.beat / 32;
+    dt = 0.5 * dt + (dt * state.audio.beat) / 32;
 
     state.spheres.objects.forEach((sphere, i) => {
       sphere.illumination = Math.max(
@@ -581,7 +519,9 @@ const run = async (audioCtx, analyser) => {
         sphere.illumination - 6 * dt * (1 - sphere.illumination)
       );
 
-      sphere.updatePosition(dt, state.gravity);
+      sphere.position.x += (state.gravity.x + sphere.velocity.x) * dt;
+      sphere.position.y += (state.gravity.y + sphere.velocity.y) * dt;
+      sphere.position.z += (state.gravity.z + sphere.velocity.z) * dt;
     });
 
     for (let i = 0; i < state.spheres.objects.length; i++) {
@@ -591,11 +531,47 @@ const run = async (audioCtx, analyser) => {
     }
 
     state.spheres.objects.forEach((sphere) => {
-      sphere.checkWallCollision(
-        state.box.size,
-        state.box.size * 2,
-        state.box.y
-      );
+      const boxWidth = state.box.size;
+      const boxHeight = state.box.size * 2;
+      const y = state.box.y;
+
+      const dampening = 0.8;
+
+      if (sphere.position.x - sphere.radius < -boxWidth) {
+        sphere.velocity.x = -sphere.velocity.x * dampening;
+        sphere.position.x = -boxWidth + sphere.radius;
+        sphere.illumination = 0.99;
+      }
+
+      if (sphere.position.x + sphere.radius > boxWidth) {
+        sphere.velocity.x = -sphere.velocity.x * dampening;
+        sphere.position.x = boxWidth - sphere.radius;
+        sphere.illumination = 0.99;
+      }
+
+      if (sphere.position.y - sphere.radius < y) {
+        sphere.velocity.y = -sphere.velocity.y * dampening;
+        sphere.position.y = sphere.radius + y;
+        sphere.illumination = 0.99;
+      }
+
+      if (sphere.position.y + sphere.radius > boxHeight + y) {
+        sphere.velocity.y = -sphere.velocity.y * dampening;
+        sphere.position.y = boxHeight - sphere.radius + y;
+        sphere.illumination = 0.99;
+      }
+
+      if (sphere.position.z - sphere.radius < -boxWidth) {
+        sphere.velocity.z = -sphere.velocity.z * dampening;
+        sphere.position.z = -boxWidth + sphere.radius;
+        sphere.illumination = 0.99;
+      }
+
+      if (sphere.position.z + sphere.radius > boxWidth) {
+        sphere.velocity.z = -sphere.velocity.z * dampening;
+        sphere.position.z = boxWidth - sphere.radius;
+        sphere.illumination = 0.99;
+      }
     });
   }
 
@@ -678,7 +654,13 @@ const run = async (audioCtx, analyser) => {
 
       gl.uniform4fv(
         gl.getUniformLocation(program, "u_spheres"),
-        state.spheres.objects.flatMap((sphere) => sphere.asVec4f())
+        state.spheres.objects.flatMap((s) => [
+          s.position.x,
+          s.position.y,
+          s.position.z,
+          // w component carries radius in integer part, illumination in fraction part
+          s.radius + s.illumination,
+        ])
       );
 
       gl.uniform1f(gl.getUniformLocation(program, "u_box_y"), state.box.y);
@@ -725,10 +707,6 @@ const run = async (audioCtx, analyser) => {
       );
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-      gl.viewport(0, 0, state.resolution.x, state.resolution.y);
-      gl.clearColor(0, 0, 0, 1);
-      gl.clear(gl.COLOR_BUFFER_BIT);
 
       window.requestAnimationFrame(render);
     } catch (err) {

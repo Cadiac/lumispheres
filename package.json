@@ -5,14 +5,19 @@
   "type": "module",
   "main": "src/main.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev-vite": "vite",
+    "build-vite": "vite build",
+    "dev": "npx serve .",
+    "build": "npx uglify-js --compress --mangle --mangle-props --toplevel  -- 4k/demo-small.js > 4k/demo.min.js",
+    "compress": "node compress.js"
   },
   "devDependencies": {
     "vite": "^5.0.8"
   },
   "dependencies": {
-    "dat.gui": "^0.7.9"
+    "dat.gui": "^0.7.9",
+    "demolishedcompressor": "^1.2.4",
+    "serve": "^14.2.1",
+    "uglify-js": "^3.17.4"
   }
 }

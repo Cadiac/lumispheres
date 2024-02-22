@@ -4,29 +4,21 @@ DAMPENING = 0.8
 // prettier-ignore
 song = {songData:[{i:[0,28,128,0,0,28,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],p:[3,3,3,3,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[131,,143,,,,143,,,,,,,143,131,,130,,142,,,,142,,,,,,,142,130,,138,138,,150,,138,,150,,,,,150,,,,137,137,,137,,137,,137,,,,,149,,,,142,,142,,154,,142,,154,,,154,,,,,140,,140,,152,,140,,152,,,152,,,,,145,,,145,,,,145,,157,157,,,,,,147,,,147,,,,147,,159,159],f:[]},{n:[135,,147,,,,147,,,,,,,147,135,,133,,145,,,,145,,137,,137,,,,,,137,137,,149,,137,,149,,,,,149,,,,138,138,,150,,138,,150,140,140,,140,,140,,140,140,,140,,152,,140,,152,,,152,,,,,140,,140,,152,,140,,147,,147,,147,,147,,,,,,,,,,,144,142,,,,,,142,,,,,154,,,133,,,145,,133],f:[]},{n:[131,,,,,,,,,,,,,,,,130,,142,,,,142,,,,,,,142,130],f:[]}]},{i:[0,91,128,0,0,95,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],p:[,,,,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[116,,,,,,,,,,,,,,,,118],f:[]},{n:[121,,,,,,,,,,,,,,,,114,,,,,,,,121,,,,,,,,,,,,,,,,,,,,,,,,131],f:[]}]},{i:[0,255,116,79,0,255,116,0,83,0,4,6,69,52,0,0,0,0,0,0,2,14,0,0,32,0,0,0,0],p:[,1,,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[135,,,,,,,,135,,135],f:[]},{n:[,,,,,,,,135,,,,135,,,,135,,135,,135,,,,135,,,,135],f:[]}]},{i:[0,0,140,0,0,0,140,0,0,81,4,10,47,55,0,0,0,187,5,0,1,239,135,0,32,108,5,16,4],p:[,,,,,,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[135,135,135,135,135,135,135,135,,,,,,,135,,,,135,,,,,,135,,,,,,135],f:[]},{n:[135,,,,135,,,,135,,,,135,,,,135,,,,135,,,,135,,,,135],f:[]}]},{i:[0,0,128,0,0,0,128,0,0,125,0,1,59,0,0,0,0,0,0,0,1,193,171,0,29,39,3,88,3],p:[,,,,,,1,,1,,1,,1,,1,,1],c:[{n:[135],f:[]}]},{i:[0,127,104,64,0,130,104,0,64,229,4,40,43,51,0,0,0,231,6,1,3,183,15,0,32,128,4,0,0],p:[,,,,,,,,1,,1,,1,,1,,1],c:[{n:[,,,,135],f:[]}]},{i:[3,255,128,0,0,255,140,0,0,127,2,2,47,61,0,0,0,96,3,1,3,94,79,0,95,84,2,12,4],p:[,,,,,,,,1,,1,,1,,1,,1],c:[{n:[,,,,,,135],f:[]}]},{i:[0,0,140,0,0,0,140,0,0,255,158,158,158,0,0,0,0,51,2,1,2,58,239,0,32,88,1,157,2],p:[1,,1],c:[{n:[111],f:[]}]}],rowLen:6615,patternLen:32,endPattern:17,numChannels:8};
 function CPlayer() {
-  var r,
+  let r,
     n,
     i,
     t,
     e,
-    a = function (r) {
-      return Math.sin(6.283184 * r)
-    },
-    f = function (r) {
-      return (r % 1) * 2 - 1
-    },
-    o = function (r) {
-      return r % 1 < 0.5 ? 1 : -1
-    },
-    u = function (r) {
-      var n = (r % 1) * 4
+    a = (r) => Math.sin(6.283184 * r),
+    f = (r) => (r % 1) * 2 - 1,
+    o = (r) => (r % 1 < 0.5 ? 1 : -1),
+    u = (r) => {
+      let n = (r % 1) * 4
       return n < 2 ? n - 1 : 3 - n
     },
-    c = function (r) {
-      return 0.003959503758 * 2 ** ((r - 128) / 12)
-    },
-    v = function (r, n, i) {
-      var t,
+    c = (r) => 0.003959503758 * 2 ** ((r - 128) / 12),
+    v = (r, n, i) => {
+      let t,
         e,
         a,
         f,
@@ -69,15 +61,15 @@ function CPlayer() {
       return m
     },
     h = [a, o, f, u]
-  ;(this.init = function (a) {
+  ;(this.init = (a) => {
     ;(r = a),
       (n = a.endPattern),
       (i = 0),
       (t = a.rowLen * a.patternLen * (n + 1) * 2),
       (e = new Int32Array(t))
   }),
-    (this.generate = function () {
-      var f,
+    (this.generate = () => {
+      let f,
         o,
         u,
         c,
@@ -101,9 +93,9 @@ function CPlayer() {
         U = []
       for (u = 0; u <= n; ++u)
         for (g = D.p[u], c = 0; c < m; ++c) {
-          var W = g ? D.c[g - 1].f[c] : 0
+          let W = g ? D.c[g - 1].f[c] : 0
           W && ((D.i[W - 1] = D.c[g - 1].f[c + m] || 0), W < 17 && (U = []))
-          var b = h[D.i[16]],
+          let b = h[D.i[16]],
             j = D.i[17] / 512,
             k = 2 ** (D.i[18] - 9) / I,
             q = D.i[19],
@@ -119,7 +111,7 @@ function CPlayer() {
           for (M = (u * m + c) * I, s = 0; s < 4; ++s)
             if (((w = g ? D.c[g - 1].n[c + s * m] : 0), w)) {
               U[w] || (U[w] = v(D, w, I))
-              var Q = U[w]
+              let Q = U[w]
               for (o = 0, f = 2 * M; o < Q.length; o++, f += 2) C[f] += Q[o]
             }
           for (o = 0; o < I; o++)
@@ -151,13 +143,7 @@ function CPlayer() {
         }
       return i++, i / r.numChannels
     }),
-    (this.createAudioBuffer = function (r) {
-      for (var n = r.createBuffer(2, t / 2, 44100), i = 0; i < 2; i++)
-        for (var a = n.getChannelData(i), f = i; f < t; f += 2)
-          a[f >> 1] = e[f] / 65536
-      return n
-    }),
-    (this.createWave = function () {
+    (this.createWave = () => {
       var r = 44,
         n = r + 2 * t - 8,
         i = n - 36,
@@ -215,17 +201,6 @@ function CPlayer() {
           (a[o++] = (u >> 8) & 255)
       }
       return a
-    }),
-    (this.getData = function (r, n) {
-      for (
-        var i = 2 * Math.floor(44100 * r), t = new Array(n), a = 0;
-        a < 2 * n;
-        a += 1
-      ) {
-        var f = i + a
-        t[a] = r > 0 && f < e.length ? e[f] / 32768 : 0
-      }
-      return t
     })
 }
 
@@ -555,9 +530,7 @@ const run = async (audioCtx, analyser) => {
       )
       gl.uniform3f(
         gl.getUniformLocation(program, 'u_fog_color'),
-        state.fog.color[0] / 255,
-        state.fog.color[1] / 255,
-        state.fog.color[2] / 255
+        ...div(state.fog.color, 255)
       )
       gl.uniform1f(
         gl.getUniformLocation(program, 'u_fog_intensity'),
@@ -565,15 +538,11 @@ const run = async (audioCtx, analyser) => {
       )
       gl.uniform3f(
         gl.getUniformLocation(program, 'u_sky_color'),
-        state.sky.color[0] / 255,
-        state.sky.color[1] / 255,
-        state.sky.color[2] / 255
+        ...div(state.sky.color, 255)
       )
       gl.uniform3f(
         gl.getUniformLocation(program, 'u_color_shift'),
-        state.colorShift.colorShift[0] / 255,
-        state.colorShift.colorShift[1] / 255,
-        state.colorShift.colorShift[2] / 255
+        ...div(state.colorShift.colorShift, 255)
       )
 
       gl.uniform4fv(

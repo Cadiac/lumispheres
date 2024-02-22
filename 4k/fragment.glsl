@@ -2,7 +2,6 @@ precision highp float;
 
 const float MAX_DIST = 200.0;
 const float EPSILON = .0001;
-const float PI = 3.14159;
 const int MAX_ITERATIONS = 500;
 
 uniform float u_time;
@@ -33,11 +32,11 @@ uniform float u_box_size;
 const int SPHERES_COUNT = 13;
 uniform vec4 u_spheres[SPHERES_COUNT];
 
-struct Ray {
-  vec2 surface;
-  vec3 pos;
-  int steps;
-  bool is_hit;
+struct R {
+  vec2 d;
+  vec3 m;
+  int i;
+  bool h;
 };
 
 vec2 opUnion(vec2 a, vec2 b) {
@@ -236,7 +235,7 @@ float sphIntersect(in vec3 p, in vec3 rayDir, in vec4 sphere) {
 vec3 palette(in float t) {
   return u_palette_a +
          u_palette_b *
-             cos(2. * PI *
+             cos(6.283184 *
                  (u_palette_c * (u_palette_offset +
                                  u_palette_range * sin(u_palette_period * t +
                                                        (u_time / 1000.))) +
@@ -267,33 +266,33 @@ vec3 shade(vec3 p, vec3 rayDir, vec3 normal, float id) {
   return color;
 }
 
-Ray rayMarch(in vec3 camera, in vec3 rayDir) {
+R rayMarch(in vec3 camera, in vec3 rayDir) {
   float stepDist = EPSILON;
   float dist = EPSILON;
   float depth = EPSILON;
 
-  Ray result;
+  R result;
 
   for (int i = 0; i < MAX_ITERATIONS; i++) {
     stepDist = 0.001 * depth;
 
-    result.pos = camera + depth * rayDir;
-    result.surface = scene(result.pos);
+    result.m = camera + depth * rayDir;
+    result.d = scene(result.m);
 
-    if (result.surface.y < stepDist) {
-      result.is_hit = true;
-      result.steps = i;
+    if (result.d.y < stepDist) {
+      result.h = true;
+      result.i = i;
       break;
     }
 
-    depth += result.surface.y;
+    depth += result.d.y;
 
     if (depth >= MAX_DIST) {
       break;
     }
   }
 
-  result.surface.y = depth;
+  result.d.y = depth;
 
   return result;
 }
@@ -345,37 +344,37 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
   float rayDist = 0.0;
 
   for (int i = 0; i < 5; i++) {
-    Ray ray = rayMarch(camera, rayDir);
+    R ray = rayMarch(camera, rayDir);
 
-    if (!ray.is_hit) {
+    if (!ray.h) {
       color = mix(color, sky(camera, rayDir), fresnel);
       float glare = clamp(dot(sunDir, rayDir), 0.0, 1.0);
       color += 0.5 * vec3(1., .5, .2) * pow(glare, 32.0);
       break;
     }
-    rayDist += ray.surface.y;
+    rayDist += ray.d.y;
 
     vec3 normal;
-    if (ray.surface.x >= SPHERE) {
-      normal = normalize(ray.pos - currentSphere.xyz);
+    if (ray.d.x >= SPHERE) {
+      normal = normalize(ray.m - currentSphere.xyz);
     } else {
-      normal = ray.surface.x == FLOOR_BOTTOM  ? vec3(0., 1., 0.)
-               : ray.surface.x == FLOOR_TOP   ? vec3(0., -1., 0.)
-               : ray.surface.x == FLOOR_LEFT  ? vec3(-1., 0., 0.)
-               : ray.surface.x == FLOOR_RIGHT ? vec3(1., 0., 0.)
-               : ray.surface.x == FLOOR_BACK
+      normal = ray.d.x == FLOOR_BOTTOM  ? vec3(0., 1., 0.)
+               : ray.d.x == FLOOR_TOP   ? vec3(0., -1., 0.)
+               : ray.d.x == FLOOR_LEFT  ? vec3(-1., 0., 0.)
+               : ray.d.x == FLOOR_RIGHT ? vec3(1., 0., 0.)
+               : ray.d.x == FLOOR_BACK
                    ? vec3(0., 0., 1.)
                    : vec3(0., 0., -1.); // FLOOR_FRONT as default
     }
 
-    vec3 light = shade(ray.pos, rayDir, normal, ray.surface.x);
+    vec3 light = shade(ray.m, rayDir, normal, ray.d.x);
 
     color = mix(color, light, fresnel);
 
     // Fog
     vec3 fog = exp2(-rayDist * u_fog_intensity * u_color_shift);
 
-    if (ray.surface.x != FLOOR_BOTTOM) {
+    if (ray.d.x != FLOOR_BOTTOM) {
       color = color * fog + (1. - fog) * u_fog_color;
       break;
     }
@@ -386,20 +385,20 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
     // Analytically box-filtered grid by Inigo Quilez, MIT License
     // https://iquilezles.org/articles/filterableprocedurals
     vec3 ddx_pos =
-        camera - ddxDir * dot(camera - ray.pos, normal) / dot(ddxDir, normal);
+        camera - ddxDir * dot(camera - ray.m, normal) / dot(ddxDir, normal);
     vec3 ddy_pos =
-        camera - ddyDir * dot(camera - ray.pos, normal) / dot(ddyDir, normal);
-    vec2 ddx_uv = ddx_pos.xz - ray.pos.xz;
-    vec2 ddy_uv = ddy_pos.xz - ray.pos.xz;
+        camera - ddyDir * dot(camera - ray.m, normal) / dot(ddyDir, normal);
+    vec2 ddx_uv = ddx_pos.xz - ray.m.xz;
+    vec2 ddy_uv = ddy_pos.xz - ray.m.xz;
 
-    float grid = filteredGrid(0.5 * ray.pos.xz, 0.5 * ddx_uv, 0.5 * ddy_uv);
+    float grid = filteredGrid(0.5 * ray.m.xz, 0.5 * ddx_uv, 0.5 * ddy_uv);
 
     fresnel *= 0.5 * grid;
     color *= 1.0 * grid;
 
     color = color * fog + (1. - fog) * u_fog_color;
 
-    camera = ray.pos;
+    camera = ray.m;
     rayDir = reflect(rayDir, normal);
   }
 

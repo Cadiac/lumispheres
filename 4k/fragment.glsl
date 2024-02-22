@@ -33,20 +33,15 @@ uniform float u_box_size;
 const int SPHERES_COUNT = 13;
 uniform vec4 u_spheres[SPHERES_COUNT];
 
-struct Surface {
-  int id;
-  float dist;
-};
-
 struct Ray {
-  Surface surface;
+  vec2 surface;
   vec3 pos;
   int steps;
   bool is_hit;
 };
 
-Surface opUnion(Surface a, Surface b) {
-  if (a.dist < b.dist) {
+vec2 opUnion(vec2 a, vec2 b) {
+  if (a.y < b.y) {
     return a;
   }
   return b;
@@ -85,56 +80,54 @@ float sdPlane(vec3 p, vec3 n, float h) {
 }
 
 vec4 currentSphere;
-const int FLOOR_BOTTOM = 1;
-const int FLOOR_TOP = 2;
-const int FLOOR_LEFT = 3;
-const int FLOOR_RIGHT = 4;
-const int FLOOR_BACK = 5;
-const int FLOOR_FRONT = 6;
-const int SPHERE = 7;
+const float FLOOR_BOTTOM = 1.;
+const float FLOOR_TOP = 2.;
+const float FLOOR_LEFT = 3.;
+const float FLOOR_RIGHT = 4.;
+const float FLOOR_BACK = 5.;
+const float FLOOR_FRONT = 6.;
+const float SPHERE = 7.;
 
-Surface scene(in vec3 p) {
+vec2 scene(in vec3 p) {
   float y = u_box_y;
 
-  Surface surface = Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), 0.));
+  vec2 surface = vec2(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), 0.));
 
   surface = opUnion(
-      surface,
-      Surface(FLOOR_BACK,
-              udQuad(p, vec3(u_box_size, y, -u_box_size),
-                     vec3(u_box_size, 2. * u_box_size + y, -u_box_size),
-                     vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
-                     vec3(-u_box_size, y, -u_box_size))));
+      surface, vec2(FLOOR_BACK,
+                    udQuad(p, vec3(u_box_size, y, -u_box_size),
+                           vec3(u_box_size, 2. * u_box_size + y, -u_box_size),
+                           vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
+                           vec3(-u_box_size, y, -u_box_size))));
 
   surface = opUnion(
-      surface,
-      Surface(FLOOR_LEFT,
-              udQuad(p, vec3(u_box_size, y, u_box_size),
-                     vec3(u_box_size, y, -u_box_size),
-                     vec3(u_box_size, 2. * u_box_size + y, -u_box_size),
-                     vec3(u_box_size, 2. * u_box_size + y, u_box_size))));
+      surface, vec2(FLOOR_LEFT,
+                    udQuad(p, vec3(u_box_size, y, u_box_size),
+                           vec3(u_box_size, y, -u_box_size),
+                           vec3(u_box_size, 2. * u_box_size + y, -u_box_size),
+                           vec3(u_box_size, 2. * u_box_size + y, u_box_size))));
+
+  surface =
+      opUnion(surface,
+              vec2(FLOOR_RIGHT,
+                   udQuad(p, vec3(-u_box_size, y, u_box_size),
+                          vec3(-u_box_size, y, -u_box_size),
+                          vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
+                          vec3(-u_box_size, 2. * u_box_size + y, u_box_size))));
+
+  surface =
+      opUnion(surface,
+              vec2(FLOOR_TOP,
+                   udQuad(p, vec3(u_box_size, 2. * u_box_size + y, u_box_size),
+                          vec3(-u_box_size, 2. * u_box_size + y, u_box_size),
+                          vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
+                          vec3(u_box_size, 2. * u_box_size + y, -u_box_size))));
 
   surface = opUnion(
-      surface,
-      Surface(FLOOR_RIGHT,
-              udQuad(p, vec3(-u_box_size, y, u_box_size),
-                     vec3(-u_box_size, y, -u_box_size),
-                     vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
-                     vec3(-u_box_size, 2. * u_box_size + y, u_box_size))));
-
-  surface = opUnion(
-      surface,
-      Surface(FLOOR_TOP,
-              udQuad(p, vec3(u_box_size, 2. * u_box_size + y, u_box_size),
-                     vec3(-u_box_size, 2. * u_box_size + y, u_box_size),
-                     vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
-                     vec3(u_box_size, 2. * u_box_size + y, -u_box_size))));
-
-  surface = opUnion(
-      surface, Surface(FLOOR_BOTTOM, udQuad(p, vec3(u_box_size, y, u_box_size),
-                                            vec3(-u_box_size, y, u_box_size),
-                                            vec3(-u_box_size, y, -u_box_size),
-                                            vec3(u_box_size, y, -u_box_size))));
+      surface, vec2(FLOOR_BOTTOM, udQuad(p, vec3(u_box_size, y, u_box_size),
+                                         vec3(-u_box_size, y, u_box_size),
+                                         vec3(-u_box_size, y, -u_box_size),
+                                         vec3(u_box_size, y, -u_box_size))));
 
   // surface =
   //     opUnion(surface,
@@ -165,10 +158,10 @@ Surface scene(in vec3 p) {
   //     0., 1.), 10.0)));
 
   for (int i = 0; i < SPHERES_COUNT; ++i) {
-    Surface sphere = Surface(
-        SPHERE + i, sdSphere(p - u_spheres[i].xyz, floor(u_spheres[i].w)));
+    vec2 sphere = vec2(SPHERE + float(i),
+                       sdSphere(p - u_spheres[i].xyz, floor(u_spheres[i].w)));
 
-    if (sphere.dist < surface.dist) {
+    if (sphere.y < surface.y) {
       surface = sphere;
       currentSphere = u_spheres[i];
     }
@@ -250,10 +243,10 @@ vec3 palette(in float t) {
                   u_palette_d));
 }
 
-vec3 shade(vec3 p, vec3 rayDir, vec3 normal, int id) {
+vec3 shade(vec3 p, vec3 rayDir, vec3 normal, float id) {
   // vec3 base = id >= SPHERE ? vec3(0.6, 0.5, 0.4) : vec3(1.0);
   vec3 base = vec3(1.0);
-  vec3 sphereLightColor = palette(float(id - SPHERE) / float(SPHERES_COUNT));
+  vec3 sphereLightColor = palette(id - SPHERE / float(SPHERES_COUNT));
 
   float occ = occlusion(p, normal);
   float occFloor = 1. - sqrt((0.5 + 0.5 * -normal.y) / (p.y + 0.5)) * .5;
@@ -287,20 +280,20 @@ Ray rayMarch(in vec3 camera, in vec3 rayDir) {
     result.pos = camera + depth * rayDir;
     result.surface = scene(result.pos);
 
-    if (result.surface.dist < stepDist) {
+    if (result.surface.y < stepDist) {
       result.is_hit = true;
       result.steps = i;
       break;
     }
 
-    depth += result.surface.dist;
+    depth += result.surface.y;
 
     if (depth >= MAX_DIST) {
       break;
     }
   }
 
-  result.surface.dist = depth;
+  result.surface.y = depth;
 
   return result;
 }
@@ -312,7 +305,7 @@ float filteredGrid(in vec2 p, in vec2 ddx, in vec2 ddy) {
   // filter kernel
   vec2 w = max(abs(ddx), abs(ddy)) + 0.01;
 
-  // analytic (box) filtering
+  // analytic box filtering
   vec2 a = p + 0.5 * w;
   vec2 b = p - 0.5 * w;
   vec2 i =
@@ -360,29 +353,29 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
       color += 0.5 * vec3(1., .5, .2) * pow(glare, 32.0);
       break;
     }
-    rayDist += ray.surface.dist;
+    rayDist += ray.surface.y;
 
     vec3 normal;
-    if (ray.surface.id >= SPHERE) {
+    if (ray.surface.x >= SPHERE) {
       normal = normalize(ray.pos - currentSphere.xyz);
     } else {
-      normal = ray.surface.id == FLOOR_BOTTOM  ? vec3(0., 1., 0.)
-               : ray.surface.id == FLOOR_TOP   ? vec3(0., -1., 0.)
-               : ray.surface.id == FLOOR_LEFT  ? vec3(-1., 0., 0.)
-               : ray.surface.id == FLOOR_RIGHT ? vec3(1., 0., 0.)
-               : ray.surface.id == FLOOR_BACK
+      normal = ray.surface.x == FLOOR_BOTTOM  ? vec3(0., 1., 0.)
+               : ray.surface.x == FLOOR_TOP   ? vec3(0., -1., 0.)
+               : ray.surface.x == FLOOR_LEFT  ? vec3(-1., 0., 0.)
+               : ray.surface.x == FLOOR_RIGHT ? vec3(1., 0., 0.)
+               : ray.surface.x == FLOOR_BACK
                    ? vec3(0., 0., 1.)
                    : vec3(0., 0., -1.); // FLOOR_FRONT as default
     }
 
-    vec3 light = shade(ray.pos, rayDir, normal, ray.surface.id);
+    vec3 light = shade(ray.pos, rayDir, normal, ray.surface.x);
 
     color = mix(color, light, fresnel);
 
     // Fog
     vec3 fog = exp2(-rayDist * u_fog_intensity * u_color_shift);
 
-    if (ray.surface.id != FLOOR_BOTTOM) {
+    if (ray.surface.x != FLOOR_BOTTOM) {
       color = color * fog + (1. - fog) * u_fog_color;
       break;
     }

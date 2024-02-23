@@ -267,7 +267,7 @@ run = async () => {
 
       audio.play()
 
-      let shader = gl.createShader(gl.VERTEX_SHADER)
+      shader = gl.createShader(0x8b31)
       gl.shaderSource(
         shader,
         `attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`
@@ -275,7 +275,7 @@ run = async () => {
       gl.compileShader(shader)
       gl.attachShader(program, shader)
 
-      shader = gl.createShader(gl.FRAGMENT_SHADER)
+      shader = gl.createShader(0x8b30)
       gl.shaderSource(
         shader,
         `precision highp float;uniform float v,z,d;uniform vec2 m;uniform vec3 f,a,c,k;uniform float h;uniform vec3 i,y,l,s,n,w;uniform float r,C,F,e,p;uniform vec4 g[13];struct R{vec2 d;vec3 m;int i;bool h;};vec2 t(vec2 p,vec2 d){return p.y<d.y?p:d;}float t(vec3 v){return dot(v,v);}float t(vec3 p,vec3 v,vec3 m,vec3 f,vec3 z){vec3 d=m-v,y=p-v,c=f-m,x=p-m,n=z-f,w=p-f,i=v-z,a=p-z,r=cross(d,i);return sqrt(sign(dot(cross(d,r),y))+sign(dot(cross(c,r),x))+sign(dot(cross(n,r),w))+sign(dot(cross(i,r),a))<3.?min(min(min(t(d*clamp(dot(d,y)/t(d),0.,1.)-y),t(c*clamp(dot(c,x)/t(c),0.,1.)-x)),t(n*clamp(dot(n,w)/t(n),0.,1.)-w)),t(i*clamp(dot(i,a)/t(i),0.,1.)-a)):dot(r,y)*dot(r,y)/t(r));}vec4 x;vec2 D(vec3 v){float m=e;vec2 d=vec2(1,dot(v,vec3(0,1,0)));d=t(d,vec2(5,t(v,vec3(p,m,-p),vec3(p,2.*p+m,-p),vec3(-p,2.*p+m,-p),vec3(-p,m,-p))));d=t(d,vec2(3,t(v,vec3(p,m,p),vec3(p,m,-p),vec3(p,2.*p+m,-p),vec3(p,2.*p+m,p))));d=t(d,vec2(4,t(v,vec3(-p,m,p),vec3(-p,m,-p),vec3(-p,2.*p+m,-p),vec3(-p,2.*p+m,p))));d=t(d,vec2(2,t(v,vec3(p,2.*p+m,p),vec3(-p,2.*p+m,p),vec3(-p,2.*p+m,-p),vec3(p,2.*p+m,-p))));d=t(d,vec2(1,t(v,vec3(p,m,p),vec3(-p,m,p),vec3(-p,m,-p),vec3(p,m,-p))));for(int f=0;f<13;++f){vec2 c=vec2(7.+float(f),length(v-g[f].xyz)-floor(g[f].w));if(c.y<d.y)d=c,x=g[f];}return d;}vec3 D(vec3 p,vec3 d){vec3 v=exp2(-abs((2.5e4-p.y)/d.y)*1e-5*y);return(i-.5*d.y)*v+(1.-v)*k;}float D(vec3 p,vec3 v,vec4 d){vec3 m=d.xyz-p;float c=length(m),f=dot(v,m),y=f,i=floor(d.w);if(f<i)y=pow(clamp((f+i)/(2.*i),0.,1.),1.5)*i;return clamp(i*i*y/(c*c*c),0.,1.);}float B(vec3 v,vec3 p){float d=1.;for(int f=0;f<13;f++)d*=1.-D(v,p,g[f]);return d;}float B(vec3 p,vec3 v,vec4 d){vec3 m=d.xyz-p;float y=sqrt(dot(m,m));return max(0.,dot(v,m/y)*(floor(d.w)/y)*fract(d.w));}vec3 B(float p){return l+s*cos(6.28318*(n*(r+C*sin(F*p+v/1e3))+w));}vec3 B(vec3 d,vec3 m,vec3 p,float v){vec3 f=B(v-7./float(13));float c=B(d,p);vec3 y=vec3(0);for(int i=0;i<13;i++)y+=B(d,p,g[i])*B(float(i)/float(13));vec3 i=vec3(1)*c*(1.-sqrt((.5+.5*-p.y)/(d.y+.5))*.5)*.4;i+=y+(v>=7.?f*fract(x.w):vec3(0));return i;}R A(vec3 p,vec3 d){float v=1e-4,m=1e-4;R f;for(int i=0;i<500;i++){v=.001*m;f.m=p+m*d;f.d=D(f.m);if(f.d.y<v){f.h=true;f.i=i;break;}m+=f.d.y;if(m>=2e2)break;}f.d.y=m;return f;}float A(vec2 p,vec2 v,vec2 d){vec2 m=max(abs(v),abs(d))+.01,y=p+.5*m,i=p-.5*m,f=(floor(y)+min(fract(y)*60.,1.)-floor(i)-min(fract(i)*60.,1.))/(60.*m);return(1.-f.x)*(1.-f.y);}mat4 E(vec3 p,vec3 v){vec3 m=normalize(v-p),d=normalize(cross(normalize(vec3(0,1,0)),m));return mat4(vec4(d,0),vec4(cross(m,d),0),vec4(-m,0),vec4(0,0,0,1));}vec3 A(vec3 v,vec3 p,vec3 d,vec2 m,float f){mat4 i=E(v,p);vec3 c=(i*vec4(normalize(vec3(m,-f)),0)).xyz,n=(i*vec4(normalize(vec3(m+vec2(1,0),-f)),0)).xyz,r=(i*vec4(normalize(vec3(m+vec2(0,1),-f)),0)).xyz,z=vec3(0);float w=1.,a=0.;for(int u=0;u<5;u++){R g=A(v,c);if(!g.h){z=mix(z,D(v,c),w);float s=clamp(dot(d,c),0.,1.);z+=.5*vec3(1,.5,.2)*pow(s,32.);break;}a+=g.d.y;vec3 s;s=g.d.x>=7.?normalize(g.m-x.xyz):g.d.x==1.?vec3(0,1,0):g.d.x==2.?vec3(0,-1,0):g.d.x==3.?vec3(-1,0,0):g.d.x==4.?vec3(1,0,0):g.d.x==5.?vec3(0,0,1):vec3(0,0,-1);vec3 l=B(g.m,c,s,g.d.x);z=mix(z,l,w);vec3 t=exp2(-a*h*y);if(g.d.x!=1.){z=z*t+(1.-t)*k;break;}w=clamp(1.+dot(c,s),0.,1.);w=.01+.4*pow(w,3.5)+.5;vec3 F=v-n*dot(v-g.m,s)/dot(n,s),C=v-r*dot(v-g.m,s)/dot(r,s);float e=A(.5*g.m.xz,.5*(F.xz-g.m.xz),.5*(C.xz-g.m.xz));w*=.5*e;z*=e;z=z*t+(1.-t)*k;v=g.m;c=reflect(c,s);}return z;}void main(){vec2 p=gl_FragCoord.xy-m/2.;vec3 i=A(f,a,normalize(c),p,m.y/tan(radians(d)/2.));i=pow(i,y);i*=vec3(1.02,.99,.9);i.z=i.z+.1;i=smoothstep(0.,1.,i);if(v<2e3)i=mix(i,vec3(0),(2e3-v)/2e3);gl_FragColor=vec4(i,1);}`
@@ -285,13 +285,15 @@ run = async () => {
 
       gl.linkProgram(program)
 
-      const vertices = [1, 1, 1, -1, -1, 1, -1, -1]
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+      gl.bindBuffer(0x8892, gl.createBuffer()) // gl.ARRAY_BUFFER
+      gl.bufferData(
+        0x8892, // gl.ARRAY_BUFFER
+        new Float32Array([1, 1, 1, -1, -1, 1, -1, -1]),
+        0x88e4 // gl.STATIC_DRAW
+      )
 
       gl.enableVertexAttribArray(0)
-      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
+      gl.vertexAttribPointer(0, 2, 0x1406, false, 0, 0) // gl.FLOAT
 
       state = {
         halt: false,
@@ -473,7 +475,7 @@ run = async () => {
 
     gl.viewport(0, 0, state.resolution.x, state.resolution.y)
     gl.clearColor(0, 0, 0, 1)
-    gl.clear(gl.COLOR_BUFFER_BIT)
+    gl.clear(0x4000)
 
     gl.useProgram(program)
 
@@ -562,7 +564,7 @@ run = async () => {
       state.palette.period
     )
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+    gl.drawArrays(5, 0, 4) // gl.TRIANGLE_STRIP
 
     window.requestAnimationFrame(render)
   }

@@ -1,5 +1,5 @@
 {
-  "name": "lohari",
+  "name": "spheres",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,8 +8,9 @@
     "dev-vite": "vite",
     "build-vite": "vite build",
     "dev": "npx serve .",
-    "build": "npx uglify-js --compress --mangle --mangle-props --toplevel  -- 4k/demo-small.js > 4k/demo.min.js",
-    "compress": "node compress.js"
+    "minify:shader": "mono ~/Applications/shader_minifier.exe -o tmp/fragment.min.glsl --format text 4k/fragment.glsl",
+    "minify:js": "npx uglify-js --compress --mangle --mangle-props --toplevel  -- 4k/demo-small.js > tmp/demo.min.js",
+    "minify:pngify": "node compress.js"
   },
   "devDependencies": {
     "vite": "^5.0.8"

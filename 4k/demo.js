@@ -1,14 +1,11 @@
-SPHERES = 13
-DAMPENING = 0.8
+S = 13
 
-// prettier-ignore
-song = {songData:[{i:[0,28,128,0,0,28,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],p:[3,3,3,3,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[131,,143,,,,143,,,,,,,143,131,,130,,142,,,,142,,,,,,,142,130,,138,138,,150,,138,,150,,,,,150,,,,137,137,,137,,137,,137,,,,,149,,,,142,,142,,154,,142,,154,,,154,,,,,140,,140,,152,,140,,152,,,152,,,,,145,,,145,,,,145,,157,157,,,,,,147,,,147,,,,147,,159,159],f:[]},{n:[135,,147,,,,147,,,,,,,147,135,,133,,145,,,,145,,137,,137,,,,,,137,137,,149,,137,,149,,,,,149,,,,138,138,,150,,138,,150,140,140,,140,,140,,140,140,,140,,152,,140,,152,,,152,,,,,140,,140,,152,,140,,147,,147,,147,,147,,,,,,,,,,,144,142,,,,,,142,,,,,154,,,133,,,145,,133],f:[]},{n:[131,,,,,,,,,,,,,,,,130,,142,,,,142,,,,,,,142,130],f:[]}]},{i:[0,91,128,0,0,95,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],p:[,,,,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[116,,,,,,,,,,,,,,,,118],f:[]},{n:[121,,,,,,,,,,,,,,,,114,,,,,,,,121,,,,,,,,,,,,,,,,,,,,,,,,131],f:[]}]},{i:[0,255,116,79,0,255,116,0,83,0,4,6,69,52,0,0,0,0,0,0,2,14,0,0,32,0,0,0,0],p:[,1,,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[135,,,,,,,,135,,135],f:[]},{n:[,,,,,,,,135,,,,135,,,,135,,135,,135,,,,135,,,,135],f:[]}]},{i:[0,0,140,0,0,0,140,0,0,81,4,10,47,55,0,0,0,187,5,0,1,239,135,0,32,108,5,16,4],p:[,,,,,,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[135,135,135,135,135,135,135,135,,,,,,,135,,,,135,,,,,,135,,,,,,135],f:[]},{n:[135,,,,135,,,,135,,,,135,,,,135,,,,135,,,,135,,,,135],f:[]}]},{i:[0,0,128,0,0,0,128,0,0,125,0,1,59,0,0,0,0,0,0,0,1,193,171,0,29,39,3,88,3],p:[,,,,,,1,,1,,1,,1,,1,,1],c:[{n:[135],f:[]}]},{i:[0,127,104,64,0,130,104,0,64,229,4,40,43,51,0,0,0,231,6,1,3,183,15,0,32,128,4,0,0],p:[,,,,,,,,1,,1,,1,,1,,1],c:[{n:[,,,,135],f:[]}]},{i:[3,255,128,0,0,255,140,0,0,127,2,2,47,61,0,0,0,96,3,1,3,94,79,0,95,84,2,12,4],p:[,,,,,,,,1,,1,,1,,1,,1],c:[{n:[,,,,,,135],f:[]}]},{i:[0,0,140,0,0,0,140,0,0,255,158,158,158,0,0,0,0,51,2,1,2,58,239,0,32,88,1,157,2],p:[1,,1],c:[{n:[111],f:[]}]}],rowLen:6615,patternLen:32,endPattern:17,numChannels:8};
-function CPlayer() {
-  let r,
-    n,
-    i,
-    t,
-    e,
+function CPlayer(s) {
+  let r = s,
+    n = s.endPattern,
+    i = 0,
+    t = s.rowLen * s.patternLen * (n + 1) * 2,
+    e = new Int32Array(t),
     a = (r) => Math.sin(6.283184 * r),
     f = (r) => (r % 1) * 2 - 1,
     o = (r) => (r % 1 < 0.5 ? 1 : -1),
@@ -61,13 +58,7 @@ function CPlayer() {
       return m
     },
     h = [a, o, f, u]
-  ;(this.init = (a) => {
-    ;(r = a),
-      (n = a.endPattern),
-      (i = 0),
-      (t = a.rowLen * a.patternLen * (n + 1) * 2),
-      (e = new Int32Array(t))
-  }),
+  ;(this.init = (a) => {}),
     (this.generate = () => {
       let f,
         o,
@@ -218,25 +209,25 @@ const Sphere = (x, y, z, radius) => ({
   mass: (4 / 3) * Math.PI * Math.pow(radius, 3)
 })
 
-running = false
+r = 0
 
-const run = async (audioCtx, analyser) => {
-  if (running) {
+const run = async () => {
+  if (r) {
     return
   }
 
-  running = true
+  r = 1
 
-  player = new CPlayer()
-  audioCtx = new AudioContext()
-  player.init(song)
+  // prettier-ignore
+  m = new CPlayer({songData:[{i:[0,28,128,0,0,28,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],p:[3,3,3,3,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[131,,143,,,,143,,,,,,,143,131,,130,,142,,,,142,,,,,,,142,130,,138,138,,150,,138,,150,,,,,150,,,,137,137,,137,,137,,137,,,,,149,,,,142,,142,,154,,142,,154,,,154,,,,,140,,140,,152,,140,,152,,,152,,,,,145,,,145,,,,145,,157,157,,,,,,147,,,147,,,,147,,159,159],f:[]},{n:[135,,147,,,,147,,,,,,,147,135,,133,,145,,,,145,,137,,137,,,,,,137,137,,149,,137,,149,,,,,149,,,,138,138,,150,,138,,150,140,140,,140,,140,,140,140,,140,,152,,140,,152,,,152,,,,,140,,140,,152,,140,,147,,147,,147,,147,,,,,,,,,,,144,142,,,,,,142,,,,,154,,,133,,,145,,133],f:[]},{n:[131,,,,,,,,,,,,,,,,130,,142,,,,142,,,,,,,142,130],f:[]}]},{i:[0,91,128,0,0,95,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],p:[,,,,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[116,,,,,,,,,,,,,,,,118],f:[]},{n:[121,,,,,,,,,,,,,,,,114,,,,,,,,121,,,,,,,,,,,,,,,,,,,,,,,,131],f:[]}]},{i:[0,255,116,79,0,255,116,0,83,0,4,6,69,52,0,0,0,0,0,0,2,14,0,0,32,0,0,0,0],p:[,1,,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[135,,,,,,,,135,,135],f:[]},{n:[,,,,,,,,135,,,,135,,,,135,,135,,135,,,,135,,,,135],f:[]}]},{i:[0,0,140,0,0,0,140,0,0,81,4,10,47,55,0,0,0,187,5,0,1,239,135,0,32,108,5,16,4],p:[,,,,,,1,2,1,2,1,2,1,2,1,2,1,2],c:[{n:[135,135,135,135,135,135,135,135,,,,,,,135,,,,135,,,,,,135,,,,,,135],f:[]},{n:[135,,,,135,,,,135,,,,135,,,,135,,,,135,,,,135,,,,135],f:[]}]},{i:[0,0,128,0,0,0,128,0,0,125,0,1,59,0,0,0,0,0,0,0,1,193,171,0,29,39,3,88,3],p:[,,,,,,1,,1,,1,,1,,1,,1],c:[{n:[135],f:[]}]},{i:[0,127,104,64,0,130,104,0,64,229,4,40,43,51,0,0,0,231,6,1,3,183,15,0,32,128,4,0,0],p:[,,,,,,,,1,,1,,1,,1,,1],c:[{n:[,,,,135],f:[]}]},{i:[3,255,128,0,0,255,140,0,0,127,2,2,47,61,0,0,0,96,3,1,3,94,79,0,95,84,2,12,4],p:[,,,,,,,,1,,1,,1,,1,,1],c:[{n:[,,,,,,135],f:[]}]},{i:[0,0,140,0,0,0,140,0,0,255,158,158,158,0,0,0,0,51,2,1,2,58,239,0,32,88,1,157,2],p:[1,,1],c:[{n:[111],f:[]}]}],rowLen:6615,patternLen:32,endPattern:17,numChannels:8})
+  a = new AudioContext()
 
   document.addEventListener(
     'keydown',
     (e) => {
       if (e.key === 'Escape') {
         state.halt = !state.halt
-        audioCtx.close()
+        a.close()
       }
     },
     true
@@ -247,56 +238,51 @@ const run = async (audioCtx, analyser) => {
     res.text()
   )
 
-  const canvas = document.createElement('canvas')
-  document.body.appendChild(canvas)
-  canvas.style.position = 'fixed'
-  canvas.style.left = canvas.style.top = 0
-
-  gl = canvas.getContext('webgl')
-  program = gl.createProgram()
-
   function init() {
-    if (player.generate() >= 1) {
-      const wave = player.createWave()
-      const audio = document.createElement('audio')
-      audio.src = URL.createObjectURL(new Blob([wave], { type: 'audio/wav' }))
-      audio.onplay = () => audioCtx.resume()
+    if (m.generate() >= 1) {
+      d = document.createElement('audio')
+      c = document.createElement('canvas')
+      document.body.appendChild(c)
 
-      analyser = audioCtx.createAnalyser()
-      const source = audioCtx.createMediaElementSource(audio)
+      c.style.position = 'fixed'
+      c.style.left = c.style.top = 0
 
-      source.connect(analyser)
-      analyser.connect(audioCtx.destination)
-      analyser.fftSize = 256
-      fftDataArray = new Uint8Array(analyser.frequencyBinCount)
+      gl = c.getContext('webgl')
+      p = gl.createProgram()
 
-      audio.play()
+      d.src = URL.createObjectURL(
+        new Blob([m.createWave()], { type: 'audio/wav' })
+      )
+      d.onplay = () => a.resume()
+
+      n = a.createAnalyser()
+      a.createMediaElementSource(d).connect(n)
+      n.connect(a.destination)
+      n.fftSize = 256
+      f = new Uint8Array(n.frequencyBinCount)
+
+      d.play()
 
       try {
-        if (!gl) {
-          alert('WebGL canvas is required')
-          return
+        s = gl.createShader(gl.VERTEX_SHADER)
+        gl.shaderSource(s, vertexShader)
+        gl.compileShader(s)
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          alert('Vertex shader: ' + gl.getShaderInfoLog(s))
         }
+        gl.attachShader(p, s)
 
-        let shader = gl.createShader(gl.VERTEX_SHADER)
-        gl.shaderSource(shader, vertexShader)
-        gl.compileShader(shader)
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-          alert('Vertex shader: ' + gl.getShaderInfoLog(shader))
+        s = gl.createShader(gl.FRAGMENT_SHADER)
+        gl.shaderSource(s, fragmentShader)
+        gl.compileShader(s)
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          alert('Fragment shader: ' + gl.getShaderInfoLog(s))
         }
-        gl.attachShader(program, shader)
+        gl.attachShader(p, s)
 
-        shader = gl.createShader(gl.FRAGMENT_SHADER)
-        gl.shaderSource(shader, fragmentShader)
-        gl.compileShader(shader)
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-          alert('Fragment shader: ' + gl.getShaderInfoLog(shader))
-        }
-        gl.attachShader(program, shader)
-
-        gl.linkProgram(program)
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-          alert('Link program: ' + gl.getProgramInfoLog(program))
+        gl.linkProgram(p)
+        if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+          alert('Link program: ' + gl.getProgramInfoLog(p))
         }
 
         const vertices = [1, 1, 1, -1, -1, 1, -1, -1]
@@ -367,7 +353,7 @@ const run = async (audioCtx, analyser) => {
             period: 10
           },
           spheres: {
-            objects: [...Array(SPHERES)].map((_, i) =>
+            objects: [...Array(S)].map((_, i) =>
               Sphere(
                 -5 + 5 * Math.random(),
                 15 + 5 * Math.random(),
@@ -436,9 +422,8 @@ const run = async (audioCtx, analyser) => {
 
   function update(dt) {
     // Slowing and speeding up the time based on beat
-    analyser.getByteFrequencyData(fftDataArray)
-    state.audio.beat = fftDataArray[state.audio.offset]
-    dt = 0.5 * dt + (dt * state.audio.beat) / 32
+    n.getByteFrequencyData(f)
+    dt = 0.5 * dt + (dt * f[state.audio.offset]) / 32
 
     // Gravity & fading the illuminated spheres over time
     state.spheres.objects.map((sphere) => {
@@ -451,8 +436,8 @@ const run = async (audioCtx, analyser) => {
     })
 
     // Spheres colliding with each other
-    for (i = 0; i < SPHERES; i++)
-      for (j = i + 1; j < SPHERES; j++)
+    for (i = 0; i < S; i++)
+      for (j = i + 1; j < S; j++)
         collisions(state.spheres.objects[i], state.spheres.objects[j])
 
     // Collisions with walls
@@ -461,12 +446,12 @@ const run = async (audioCtx, analyser) => {
         let min = i == 1 ? state.box.y : -state.box.size,
           max = i == 1 ? state.box.size * 2 + state.box.y : state.box.size
         if (sphere.position[i] - sphere.radius < min) {
-          sphere.velocity[i] = -sphere.velocity[i] * DAMPENING
+          sphere.velocity[i] = -sphere.velocity[i] * 0.8
           sphere.position[i] = min + sphere.radius
           sphere.illumination = 0.99
         }
         if (sphere.position[i] + sphere.radius > max) {
-          sphere.velocity[i] = -sphere.velocity[i] * DAMPENING
+          sphere.velocity[i] = -sphere.velocity[i] * 0.8
           sphere.position[i] = max - sphere.radius
           sphere.illumination = 0.99
         }
@@ -492,61 +477,61 @@ const run = async (audioCtx, analyser) => {
       ) {
         state.resolution.x = window.innerWidth
         state.resolution.y = window.innerHeight
-        canvas.width = window.innerWidth
-        canvas.height = window.innerHeight
+        c.width = window.innerWidth
+        c.height = window.innerHeight
       }
 
       gl.viewport(0, 0, state.resolution.x, state.resolution.y)
       gl.clearColor(0, 0, 0, 1)
       gl.clear(gl.COLOR_BUFFER_BIT)
 
-      gl.useProgram(program)
+      gl.useProgram(p)
 
-      gl.uniform1f(gl.getUniformLocation(program, 'u_time'), state.now)
-      gl.uniform1f(gl.getUniformLocation(program, 'u_beat'), state.audio.beat)
+      gl.uniform1f(gl.getUniformLocation(p, 'u_time'), state.now)
+      gl.uniform1f(gl.getUniformLocation(p, 'u_beat'), f[state.audio.offset])
       gl.uniform2f(
-        gl.getUniformLocation(program, 'u_resolution'),
+        gl.getUniformLocation(p, 'u_resolution'),
         state.resolution.x,
         state.resolution.y
       )
-      gl.uniform1f(gl.getUniformLocation(program, 'u_fov'), state.camera.fov)
+      gl.uniform1f(gl.getUniformLocation(p, 'u_fov'), state.camera.fov)
       gl.uniform3f(
-        gl.getUniformLocation(program, 'u_camera'),
+        gl.getUniformLocation(p, 'u_camera'),
         state.camera.position.x,
         state.camera.position.y,
         state.camera.position.z
       )
       gl.uniform3f(
-        gl.getUniformLocation(program, 'u_target'),
+        gl.getUniformLocation(p, 'u_target'),
         state.camera.target.x,
         state.camera.target.y,
         state.camera.target.z
       )
       gl.uniform3f(
-        gl.getUniformLocation(program, 'u_sun'),
+        gl.getUniformLocation(p, 'u_sun'),
         state.sun.x,
         state.sun.y,
         state.sun.z
       )
       gl.uniform3f(
-        gl.getUniformLocation(program, 'u_fog_color'),
+        gl.getUniformLocation(p, 'u_fog_color'),
         ...div(state.fog.color, 255)
       )
       gl.uniform1f(
-        gl.getUniformLocation(program, 'u_fog_intensity'),
+        gl.getUniformLocation(p, 'u_fog_intensity'),
         state.fog.intensity
       )
       gl.uniform3f(
-        gl.getUniformLocation(program, 'u_sky_color'),
+        gl.getUniformLocation(p, 'u_sky_color'),
         ...div(state.sky.color, 255)
       )
       gl.uniform3f(
-        gl.getUniformLocation(program, 'u_color_shift'),
+        gl.getUniformLocation(p, 'u_color_shift'),
         ...div(state.colorShift.colorShift, 255)
       )
 
       gl.uniform4fv(
-        gl.getUniformLocation(program, 'u_spheres'),
+        gl.getUniformLocation(p, 'u_spheres'),
         state.spheres.objects.flatMap((s) => [
           ...s.position,
           // w component of vec4 carries radius in its integer part,
@@ -555,35 +540,35 @@ const run = async (audioCtx, analyser) => {
         ])
       )
 
-      gl.uniform1f(gl.getUniformLocation(program, 'u_box_y'), state.box.y)
-      gl.uniform1f(gl.getUniformLocation(program, 'u_box_size'), state.box.size)
+      gl.uniform1f(gl.getUniformLocation(p, 'u_box_y'), state.box.y)
+      gl.uniform1f(gl.getUniformLocation(p, 'u_box_size'), state.box.size)
 
       gl.uniform3f(
-        gl.getUniformLocation(program, 'u_palette_a'),
+        gl.getUniformLocation(p, 'u_palette_a'),
         ...div(state.palette.a, 255)
       )
       gl.uniform3f(
-        gl.getUniformLocation(program, 'u_palette_b'),
+        gl.getUniformLocation(p, 'u_palette_b'),
         ...div(state.palette.b, 255)
       )
       gl.uniform3f(
-        gl.getUniformLocation(program, 'u_palette_c'),
+        gl.getUniformLocation(p, 'u_palette_c'),
         ...div(state.palette.c, 255)
       )
       gl.uniform3f(
-        gl.getUniformLocation(program, 'u_palette_d'),
+        gl.getUniformLocation(p, 'u_palette_d'),
         ...div(state.palette.d, 255)
       )
       gl.uniform1f(
-        gl.getUniformLocation(program, 'u_palette_offset'),
+        gl.getUniformLocation(p, 'u_palette_offset'),
         state.palette.offset
       )
       gl.uniform1f(
-        gl.getUniformLocation(program, 'u_palette_range'),
+        gl.getUniformLocation(p, 'u_palette_range'),
         state.palette.range
       )
       gl.uniform1f(
-        gl.getUniformLocation(program, 'u_palette_period'),
+        gl.getUniformLocation(p, 'u_palette_period'),
         state.palette.period
       )
 
@@ -647,6 +632,5 @@ const setupDebugUI = () => {
   sunFolder.add(state.sun, 'z', -100, 100, 0.01).listen()
 
   const beatFolder = gui.addFolder('Audio')
-  beatFolder.add(state.audio, 'beat', 0.0, 255, 1).listen()
   beatFolder.add(state.audio, 'offset', 0, 127, 1).listen()
 }

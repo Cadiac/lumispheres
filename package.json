@@ -10,7 +10,7 @@
     "dev": "npx serve .",
     "minify:shader": "mono ~/Applications/shader_minifier.exe -o tmp/fragment.min.glsl --format text 4k/fragment.glsl",
     "minify:js": "npx uglify-js --compress --mangle --mangle-props --toplevel  -- 4k/demo-small.js > tmp/demo.min.js",
-    "minify:pngify": "node compress.js"
+    "minify:compress": "node compress.js"
   },
   "devDependencies": {
     "vite": "^5.0.8"

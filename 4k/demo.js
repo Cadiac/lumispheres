@@ -247,8 +247,8 @@ const run = async () => {
       c.style.position = 'fixed'
       c.style.left = c.style.top = 0
 
-      gl = c.getContext('webgl')
-      p = gl.createProgram()
+      g = c.getContext('webgl')
+      p = g.createProgram()
 
       d.src = URL.createObjectURL(
         new Blob([m.createWave()], { type: 'audio/wav' })
@@ -264,38 +264,36 @@ const run = async () => {
       d.play()
 
       try {
-        s = gl.createShader(gl.VERTEX_SHADER)
-        gl.shaderSource(s, vertexShader)
-        gl.compileShader(s)
-        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-          alert('Vertex shader: ' + gl.getShaderInfoLog(s))
+        s = g.createShader(0x8b31) // g.VERTEX_SHADER
+        g.shaderSource(s, vertexShader)
+        g.compileShader(s)
+        if (!g.getShaderParameter(s, g.COMPILE_STATUS)) {
+          alert('Vertex shader: ' + g.getShaderInfoLog(s))
         }
-        gl.attachShader(p, s)
+        g.attachShader(p, s)
 
-        s = gl.createShader(gl.FRAGMENT_SHADER)
-        gl.shaderSource(s, fragmentShader)
-        gl.compileShader(s)
-        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-          alert('Fragment shader: ' + gl.getShaderInfoLog(s))
+        s = g.createShader(0x8b30) // g.FRAGMENT_SHADER
+        g.shaderSource(s, fragmentShader)
+        g.compileShader(s)
+        if (!g.getShaderParameter(s, g.COMPILE_STATUS)) {
+          alert('Fragment shader: ' + g.getShaderInfoLog(s))
         }
-        gl.attachShader(p, s)
+        g.attachShader(p, s)
 
-        gl.linkProgram(p)
-        if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
-          alert('Link program: ' + gl.getProgramInfoLog(p))
+        g.linkProgram(p)
+        if (!g.getProgramParameter(p, g.LINK_STATUS)) {
+          alert('Link program: ' + g.getProgramInfoLog(p))
         }
 
-        const vertices = [1, 1, 1, -1, -1, 1, -1, -1]
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
-        gl.bufferData(
-          gl.ARRAY_BUFFER,
-          new Float32Array(vertices),
-          gl.STATIC_DRAW
+        g.bindBuffer(0x8892, g.createBuffer()) // g.ARRAY_BUFFER
+        g.bufferData(
+          0x8892, // g.ARRAY_BUFFER
+          new Float32Array([1, 1, 1, -1, -1, 1, -1, -1]),
+          0x88e4 // g.STATIC_DRAW
         )
 
-        gl.enableVertexAttribArray(0)
-        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
+        g.enableVertexAttribArray(0)
+        g.vertexAttribPointer(0, 2, 0x1406, false, 0, 0) // g.FLOAT
 
         state = {
           halt: false,
@@ -459,6 +457,18 @@ const run = async () => {
     })
   }
 
+  u = (loc, ...v) => {
+    i = v.length
+    l = g.getUniformLocation(p, loc)
+    i == 2
+      ? g.uniform2f(l, ...v)
+      : i == 3
+      ? g.uniform3f(l, ...v)
+      : !!v[0].length
+      ? g.uniform4fv(l, v[0])
+      : g.uniform1f(l, v[0])
+  }
+
   function render() {
     state.now = performance.now() - state.epoch
     const dt = (state.now - state.lastRenderTime) / 1000
@@ -481,57 +491,36 @@ const run = async () => {
         c.height = window.innerHeight
       }
 
-      gl.viewport(0, 0, state.resolution.x, state.resolution.y)
-      gl.clearColor(0, 0, 0, 1)
-      gl.clear(gl.COLOR_BUFFER_BIT)
+      g.viewport(0, 0, state.resolution.x, state.resolution.y)
+      g.clearColor(0, 0, 0, 1)
+      g.clear(0x4000)
 
-      gl.useProgram(p)
+      g.useProgram(p)
 
-      gl.uniform1f(gl.getUniformLocation(p, 'u_time'), state.now)
-      gl.uniform1f(gl.getUniformLocation(p, 'u_beat'), f[state.audio.offset])
-      gl.uniform2f(
-        gl.getUniformLocation(p, 'u_resolution'),
-        state.resolution.x,
-        state.resolution.y
-      )
-      gl.uniform1f(gl.getUniformLocation(p, 'u_fov'), state.camera.fov)
-      gl.uniform3f(
-        gl.getUniformLocation(p, 'u_camera'),
+      u('u_time', state.now)
+      u('u_beat', f[state.audio.offset])
+      u('u_resolution', state.resolution.x, state.resolution.y)
+      u('u_fov', state.camera.fov)
+      u(
+        'u_camera',
         state.camera.position.x,
         state.camera.position.y,
         state.camera.position.z
       )
-      gl.uniform3f(
-        gl.getUniformLocation(p, 'u_target'),
+      u(
+        'u_target',
         state.camera.target.x,
         state.camera.target.y,
         state.camera.target.z
       )
-      gl.uniform3f(
-        gl.getUniformLocation(p, 'u_sun'),
-        state.sun.x,
-        state.sun.y,
-        state.sun.z
-      )
-      gl.uniform3f(
-        gl.getUniformLocation(p, 'u_fog_color'),
-        ...div(state.fog.color, 255)
-      )
-      gl.uniform1f(
-        gl.getUniformLocation(p, 'u_fog_intensity'),
-        state.fog.intensity
-      )
-      gl.uniform3f(
-        gl.getUniformLocation(p, 'u_sky_color'),
-        ...div(state.sky.color, 255)
-      )
-      gl.uniform3f(
-        gl.getUniformLocation(p, 'u_color_shift'),
-        ...div(state.colorShift.colorShift, 255)
-      )
+      u('u_sun', state.sun.x, state.sun.y, state.sun.z)
+      u('u_fog_color', ...div(state.fog.color, 255))
+      u('u_fog_intensity', state.fog.intensity)
+      u('u_sky_color', ...div(state.sky.color, 255))
+      u('u_color_shift', ...div(state.colorShift.colorShift, 255))
 
-      gl.uniform4fv(
-        gl.getUniformLocation(p, 'u_spheres'),
+      u(
+        'u_spheres',
         state.spheres.objects.flatMap((s) => [
           ...s.position,
           // w component of vec4 carries radius in its integer part,
@@ -540,39 +529,18 @@ const run = async () => {
         ])
       )
 
-      gl.uniform1f(gl.getUniformLocation(p, 'u_box_y'), state.box.y)
-      gl.uniform1f(gl.getUniformLocation(p, 'u_box_size'), state.box.size)
+      u('u_box_y', state.box.y)
+      u('u_box_size', state.box.size)
 
-      gl.uniform3f(
-        gl.getUniformLocation(p, 'u_palette_a'),
-        ...div(state.palette.a, 255)
-      )
-      gl.uniform3f(
-        gl.getUniformLocation(p, 'u_palette_b'),
-        ...div(state.palette.b, 255)
-      )
-      gl.uniform3f(
-        gl.getUniformLocation(p, 'u_palette_c'),
-        ...div(state.palette.c, 255)
-      )
-      gl.uniform3f(
-        gl.getUniformLocation(p, 'u_palette_d'),
-        ...div(state.palette.d, 255)
-      )
-      gl.uniform1f(
-        gl.getUniformLocation(p, 'u_palette_offset'),
-        state.palette.offset
-      )
-      gl.uniform1f(
-        gl.getUniformLocation(p, 'u_palette_range'),
-        state.palette.range
-      )
-      gl.uniform1f(
-        gl.getUniformLocation(p, 'u_palette_period'),
-        state.palette.period
-      )
+      u('u_palette_a', ...div(state.palette.a, 255))
+      u('u_palette_b', ...div(state.palette.b, 255))
+      u('u_palette_c', ...div(state.palette.c, 255))
+      u('u_palette_d', ...div(state.palette.d, 255))
+      u('u_palette_offset', state.palette.offset)
+      u('u_palette_range', state.palette.range)
+      u('u_palette_period', state.palette.period)
 
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+      g.drawArrays(5, 0, 4)
 
       window.requestAnimationFrame(render)
     } catch (err) {

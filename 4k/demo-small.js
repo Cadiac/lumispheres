@@ -199,15 +199,15 @@ mul = (a, b) => a.map((v, i) => v * b[i])
 div = (a, s) => a.map((v) => v / s)
 sum = (a) => a.reduce((v, i) => v + i)
 
-S = (x, y, z, r) => ({
-  p: [x, y, z],
-  v: [-0.5 + Math.random(), -0.5 + Math.random(), -0.5 + Math.random()],
+S = (r) => ({
+  p: [0, 10, 0],
+  v: div([r, r, r], 3),
   i: 0,
   r,
-  mass: (4 / 3) * Math.PI * Math.pow(r, 3)
+  m: 4 * r ** 3
 })
 
-z = async () => {
+e = () => {
   // longer: https://sb.bitsnbites.eu/?data=U0JveA4C7d09axRBGADgd_cuQST4UQoK1ylYpIggKEIawS5ILAKCsUwhCBIEC8lxR1gSjosSIiIk-QH-AAsrf4W_QCzzE879unycHBamSC7PM_MOM7Ozu7PDdW9xP29EXI_WpbjZjjxmImbiSVTSQURrsdFpNnJJerx0YytfsFWt2-pGJ_p5p1-N-53Y3IxPUUSuaDY2oiq5nXJlP76UUdSIXl4-l1HUiI9lzWN3t3zkdlnz2N-P05DVj6sensV6_bp6i8V-d2Kj3GrZDL-n1yu32hvd73C8XZdDH6ozKdv8S9eLl6z___67I-PR8z_rhuc8zvCcx13_65xHnNY5AwAAAAAAF8jzdsTymHRZMTiZLlsdufvtOfvadyPjN2Pmh7p-IAAAAAAAAJNtsLqQRyxGc_rxvWoqvRLRKntJpCfTZVl9VxbZuf7q7DCyY30AAAAAAAAunl4VT5uXZ-_n3e9TkRxk0Xo1da1ZLTiRLqtVV46STMfbsyz7RwAAAAAAAHDRtKt4H8nDeib58TVu3W4sNerhsSKlBAAAAAAAwERZW5mPzkrM_2reuTuXj39PJ41vV6PVbh6tOUqXFaTMAAAAAAAAmBSNQTti0ItYS9PZR_nEy0bSeLEQy8_SmcOE2cl0mYQZAAAAAAAAk6P-77LB3t5eMZxLk_TBQbSWkt30KEE29Np5AQAAAAAAMEH-AA
   // shorter: https://sb.bitsnbites.eu/?data=U0JveA4C7d3NahNRFADgMzOpiBR1Kyhkp-CiiwqCInQjuCtSFwXBuuxCEKQILqQhoQwtoVVKRYS2D-ADuHDlU_gE4rKPEOcvaYkEF3bRpt9351zuufOTO5fsDiE_b0TMRvty3OxEEbNl9iRq6SCivZR1W1khSesWvdgpzu3Ul-z0ohvbxWC7zre7sbUVn6KMQtltbkbdCnvVldvxpYryiOgX7XMV5RHxsTqK2N-vHrlbHUUcHsZpyJvH1Q_PY6P5uGaJ5Xr3YrNaatUN36ffr5baH1_vMN9t2siHek-qvnjTjfJDNv5__b2xfHz_z7rhPk8y3OdJ5__a5zGntc8AAAAAAMAF8rwTsTKhUlYmo0rZ2tiNb8_Zi74by99MmB_q-W4AAAAAAABMt8HaYhGxFK1Lj-_VU-nViHY1SiIdVcry5oZ8NDqf8lHkJ8YAAAAAAABcPP06nrauzN0vht9nIjnKo_1q5nqrLJUNf1UWeaO-67i-dLI_y_J_BAAAAAAAABdNp473kTxsZpIfX-PW7Ww5KwtlSdNUkwAAAAAAAJgu66sL0V2NhV-tO3fni_z3pST7di3andbxNVWlrKRaBgAAAAAAwLTIBp2IQT9iPU3nHhUTL7Mke7EYK8_S2VGtbFQpUysDAAAAAABgejT_UzY4ODgo0_k0SR8cRXs52U9PVMgieW2rAAAAAAAAmCJ_AA
   // prettier-ignore
@@ -332,14 +332,7 @@ z = async () => {
           range: 1.0,
           period: 10
         },
-        s: [...Array(13)].map((_, i) =>
-          S(
-            -5 + 5 * Math.random(),
-            15 + 5 * Math.random(),
-            -5 + 5 * Math.random(),
-            (i % 3) + 1
-          )
-        ),
+        s: [...Array(13)].map((_, i) => S((i % 3) + 1)),
         box: {
           y: 10,
           size: 10
@@ -359,34 +352,34 @@ z = async () => {
   }
 
   function collisions(sphere1, sphere2) {
-    ;[dx, dy, dz] = dxyz = sub(sphere2.p, sphere1.p)
-    d = Math.sqrt(dx * dx + dy * dy + dz * dz)
-    o = sphere1.r + sphere2.r - d
+    x = sub(sphere2.p, sphere1.p)
+    y = Math.hypot(...x)
+    w = sphere1.r + sphere2.r - y
 
-    if (o > 0) {
-      ;[nx, ny, nz] = nxyz = div(dxyz, d)
+    if (w > 0) {
+      z = div(x, y)
 
-      v1i = sum(mul(sphere1.v, nxyz))
-      v2i = sum(mul(sphere2.v, nxyz))
+      x = sum(mul(sphere1.v, z))
+      y = sum(mul(sphere2.v, z))
 
-      dv1 =
-        (v1i * (sphere1.mass - sphere2.mass) + 2 * sphere2.mass * v2i) /
-          (sphere1.mass + sphere2.mass) -
-        v1i
-      dv2 =
-        (v2i * (sphere2.mass - sphere1.mass) + 2 * sphere1.mass * v1i) /
-          (sphere1.mass + sphere2.mass) -
-        v2i
+      v =
+        (x * (sphere1.m - sphere2.m) + 2 * sphere2.m * y) /
+          (sphere1.m + sphere2.m) -
+        x
+      sphere1.v = add(sphere1.v, mul([v, v, v], z))
 
-      sphere1.v = add(sphere1.v, mul([dv1, dv1, dv1], nxyz))
-      sphere2.v = add(sphere2.v, mul([dv2, dv2, dv2], nxyz))
+      v =
+        (y * (sphere2.m - sphere1.m) + 2 * sphere1.m * x) /
+          (sphere1.m + sphere2.m) -
+        y
+      sphere2.v = add(sphere2.v, mul([v, v, v], z))
 
-      tm = sphere1.mass + sphere2.mass
-      m1 = (o * sphere2.mass) / tm
-      m2 = (o * sphere1.mass) / tm
+      v = sphere1.m + sphere2.m
+      x = (w * sphere2.m) / v
+      y = (w * sphere1.m) / v
 
-      sphere1.p = sub(sphere1.p, mul([m1, m1, m1], nxyz))
-      sphere2.p = add(sphere2.p, mul([m2, m2, m2], nxyz))
+      sphere1.p = sub(sphere1.p, mul([x, x, x], z))
+      sphere2.p = add(sphere2.p, mul([y, y, y], z))
 
       sphere1.i = sphere2.i = 0.999
     }

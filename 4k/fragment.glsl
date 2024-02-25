@@ -11,7 +11,7 @@ uniform vec3 u_palette_b;
 uniform vec3 u_palette_c;
 uniform vec3 u_palette_d;
 
-const float MAX_DIST = 200.0;
+const float MAX_DIST = 2000.0;
 const float EPSILON = .0001;
 const int MAX_ITERATIONS = 500;
 

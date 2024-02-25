@@ -110,11 +110,13 @@ export const run = async (audioCtx, analyser) => {
       z: -100,
     },
     fog: {
-      color: [230, 97, 205],
+      // color: [23, 67, 59],
+      color: [52, 82, 125],
       intensity: 0.005,
     },
     sky: {
-      color: [61, 245, 245],
+      color: [6, 16, 29],
+      // color: [230, 230, 230],
     },
     colorShift: {
       colorShift: [255, 235, 255],

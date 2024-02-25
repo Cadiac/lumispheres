@@ -1,6 +1,6 @@
 precision highp float;
 
-const float MAX_DIST = 200.0;
+const float MAX_DIST = 2000.0;
 const float EPSILON = .0001;
 const float PI = 3.14159;
 const int MAX_ITERATIONS = 500;
@@ -84,6 +84,11 @@ float sdPlane(vec3 p, vec3 n, float h) {
   return dot(p, n) + h;
 }
 
+float sdBox(vec3 p, vec3 b) {
+  vec3 q = abs(p) - b;
+  return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+}
+
 vec4 currentSphere;
 const int FLOOR_BOTTOM = 1;
 const int FLOOR_TOP = 2;
@@ -93,18 +98,18 @@ const int FLOOR_BACK = 5;
 const int FLOOR_FRONT = 6;
 const int SPHERE = 7;
 
-Surface scene(in vec3 p) {
+Surface terrain(in vec3 p) {
+  return Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), 0.));
+}
+
+Surface boxes(in vec3 p) {
   float y = u_box_y;
 
-  Surface surface = Surface(FLOOR_BOTTOM, sdPlane(p, vec3(0., 1., 0.), 0.));
-
-  surface = opUnion(
-      surface,
-      Surface(FLOOR_BACK,
-              udQuad(p, vec3(u_box_size, y, -u_box_size),
-                     vec3(u_box_size, 2. * u_box_size + y, -u_box_size),
-                     vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
-                     vec3(-u_box_size, y, -u_box_size))));
+  Surface surface = Surface(
+      FLOOR_BACK, udQuad(p, vec3(u_box_size, y, -u_box_size),
+                         vec3(u_box_size, 2. * u_box_size + y, -u_box_size),
+                         vec3(-u_box_size, 2. * u_box_size + y, -u_box_size),
+                         vec3(-u_box_size, y, -u_box_size)));
 
   surface = opUnion(
       surface,
@@ -141,12 +146,13 @@ Surface scene(in vec3 p) {
   //             Surface(FLOOR_FRONT,
   //                     udQuad(p, vec3(u_box_size, y, u_box_size),
   //                            vec3(u_box_size, 2. * u_box_size + y,
-  //                            u_box_size), vec3(-u_box_size, 2. * u_box_size +
-  //                            y, u_box_size), vec3(-u_box_size, y,
+  //                            u_box_size), vec3(-u_box_size, 2. * u_box_size
+  //                            + y, u_box_size), vec3(-u_box_size, y,
   //                            u_box_size))));
 
   // surface = opUnion(surface, Surface(FLOOR_TOP, udQuad(p.xz, vec2(-10, 0),
-  //                                                      vec2(10, 20), p.y)));
+  //                                                      vec2(10, 20),
+  //                                                      p.y)));
 
   // surface =
   //     opUnion(surface, Surface(FLOOR_TOP, sdPlane(p, vec3(0., -1.,
@@ -177,12 +183,26 @@ Surface scene(in vec3 p) {
   return surface;
 }
 
+Surface map(in vec3 p) {
+  Surface res = terrain(p);
+
+  float bb = sdBox(p - vec3(0., 2. * u_box_y, 0.), vec3(u_box_size));
+  if (bb < res.dist) {
+    Surface b = boxes(p);
+    if (b.dist < res.dist)
+      res = b;
+  }
+
+  return res;
+}
+
 vec3 sky(in vec3 camera, in vec3 dir, in vec3 sunDir) {
   // Deeper blue when looking up
   vec3 color = u_sky_color - .5 * dir.y;
 
   // Fade to fog further away
-  float dist = (25000. - camera.y) / dir.y;
+  float dist = dir.y < 0. ? 100000000. : (25000. - camera.y) / dir.y;
+
   vec3 e = exp2(-abs(dist) * .00001 * u_color_shift);
   color = color * e + (1.0 - e) * u_fog_color;
 
@@ -291,7 +311,8 @@ Ray rayMarch(in vec3 camera, in vec3 rayDir) {
     stepDist = 0.001 * depth;
 
     result.pos = camera + depth * rayDir;
-    result.surface = scene(result.pos);
+
+    result.surface = map(result.pos);
 
     if (result.surface.dist < stepDist) {
       result.is_hit = true;
@@ -358,8 +379,8 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
 
     if (!ray.is_hit) {
       color = mix(color, sky(camera, rayDir, sunDir), fresnel);
-      float glare = clamp(dot(sunDir, rayDir), 0.0, 1.0);
-      color += 0.5 * vec3(1., .5, .2) * pow(glare, 32.0);
+      color += 0.5 * vec3(1., .5, .2) *
+               pow(clamp(dot(sunDir, rayDir), 0.0, 1.0), 10.0);
       break;
     }
     rayDist += ray.surface.dist;

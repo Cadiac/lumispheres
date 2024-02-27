@@ -275,38 +275,53 @@ onclick = () => {
       : g.uniform1f(l, v[0])
   }
 
+  // Camera movements and gravity changes
   D = [
+    // Circling around the box
     [
-      [0, 50, -250],
-      [() => 0, (i) => 0.01, (i) => 0.05 * i]
+      [-100, 20, 50],
+      [(i) => 100 * S(i / 6), 0, (i) => 100 * C(i / 6)]
     ],
+
+    // Flying behind the box, showing the lights on its walls
     [
-      [0, 50, 0],
-      [(i) => 50 * S(i / 10000), () => 0, (i) => 50 * C(i / 5000)]
+      [-40, 40, -80],
+      [0, (i) => 30 * C(i / 3), 0],
+      [0, -1, -1]
     ],
+
+    // Front of the box
     [
-      [-30, 20, 50],
-      [() => 0, () => 0, (i) => 0.01 * i - 100]
+      [0, 20, 60],
+      [0, 0, 0],
+      [0, 1, 0]
     ],
+
+    // Low angle
     [
-      [30, 5, 50],
-      [(i) => 10 * S(i / 1000), () => 0, (i) => 5 * C(i / 1000)]
+      [25, 0, 50],
+      [0, 0, 0],
+      [-1, 1, -1]
     ],
+
+    // Further away
     [
       [100, 50, 100],
-      [(i) => 50 * S(i / 1000), () => 0, (i) => 50 * C(i / 1000)]
+      [(i) => 50 * S(i / 1000), () => 0, (i) => 50 * C(i / 1000)],
+      [-1, -1, 1]
     ],
+
+    // Front of the box
     [
       [0, 20, 60],
-      [() => 0, () => 0, () => 0]
+      [0, 0, 0],
+      [0, 1, -1]
     ],
+    // Flying away
     [
       [0, 20, 60],
-      [() => 0, () => 0, () => 0]
-    ],
-    [
-      [0, 20, 60],
-      [() => 0, () => 0, () => 0]
+      [0, 0, (i) => i ** 3],
+      [0, -1, 0]
     ]
   ]
 
@@ -320,11 +335,12 @@ onclick = () => {
     }
 
     // Camera directions
-    ;[i, j] = D[(s.n / 10000) | 0]
+    ;[x, y, z] = D[(s.n / 9600) | 0]
     P = add(
-      i,
-      j.map((j) => j(s.n))
+      x,
+      y.map((y) => (y ? y((s.n % 9600) / 1000) : 0))
     )
+    z && (s.g = z)
 
     // Slowing and speeding up the time based on beat
     n.getByteFrequencyData(f)

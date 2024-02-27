@@ -1,15 +1,10 @@
 precision highp float;
 
 uniform float u_time;
-uniform vec2 u_resolution;
+uniform vec3 u_resolution;
 
 uniform vec3 u_camera;
 uniform vec3 u_target;
-
-uniform vec3 u_palette_a;
-uniform vec3 u_palette_b;
-uniform vec3 u_palette_c;
-uniform vec3 u_palette_d;
 
 const float MAX_DIST = 2000.0;
 const float EPSILON = .0001;
@@ -204,11 +199,11 @@ float sphIntersect(in vec3 p, in vec3 rayDir, in vec4 sphere) {
 }
 
 vec3 palette(in float t) {
-  return u_palette_a +
-         u_palette_b *
-             cos(6.283184 *
-                 (u_palette_c * (0. + 1. * sin(10. * t + (u_time / 1000.))) +
-                  u_palette_d));
+  return vec3(0.37, 0.1, 0.1) +
+         vec3(0.68, 0.29, 0.29) *
+             cos(6.283184 * (vec3(0.04, 0.04, 0.8) *
+                                 (0. + 1. * sin(10. * t + (u_time / 1000.))) +
+                             vec3(0.19)));
 }
 
 vec3 shade(vec3 p, vec3 rayDir, vec3 normal, float id) {
@@ -375,7 +370,7 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
 }
 
 void main() {
-  vec2 xy = gl_FragCoord.xy - u_resolution / 2.0;
+  vec2 xy = gl_FragCoord.xy - u_resolution.xy / 2.0;
   float z = u_resolution.y / tan(0.5);
 
   vec3 sunDir = vec3(-0.0123, 0.02, -0.9997);

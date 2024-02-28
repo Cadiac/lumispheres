@@ -376,16 +376,16 @@ void main() {
 
   vec3 color = render(u_camera, u_target, sunDir, xy, z);
 
-  // Do I actually want these?
-  // color = pow(color, COLOR_SHIFT);
-  // color *= vec3(1.02, 0.99, 0.9);
-  // color.z = color.z + 0.1;
+  // Color shift taken from some IQ production - do I actually want these?
+  color = pow(color, COLOR_SHIFT);
+  color *= vec3(1.02, 0.99, 0.9);
+  color.z = color.z + 0.1;
 
-  // color = smoothstep(0.0, 1.0, color);
+  color = smoothstep(0.0, 1.0, color);
 
   // Fade in
-  if (u_time < 2000.) {
-    color = mix(color, vec3(0.), (2000. - u_time) / 2000.);
+  if (u_time < 5000.) {
+    color = mix(color, vec3(0.), (5000. - u_time) / 5000.);
   }
 
   gl_FragColor = vec4(color, 1.0);

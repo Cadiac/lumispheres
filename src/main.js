@@ -8,39 +8,28 @@ const button = document.querySelector("#start");
 
 button.addEventListener("click", (event) => {
   const t0 = new Date();
-  const player = new CPlayer();
+  const player = new CPlayer(song);
   const audioCtx = new AudioContext();
 
-  player.init(song);
+  while (player.generate() < 1);
 
-  var done = false;
-  setInterval(function () {
-    if (done) {
-      return;
-    }
+  const t1 = new Date();
+  console.log("done (" + (t1 - t0) + "ms)");
 
-    done = player.generate() >= 1;
+  // Put the generated song in an Audio element.
+  const wave = player.createWave();
+  const audio = document.createElement("audio");
+  audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
+  audio.onplay = () => audioCtx.resume();
 
-    if (done) {
-      const t1 = new Date();
-      console.log("done (" + (t1 - t0) + "ms)");
+  // Create an analyser
+  const analyser = audioCtx.createAnalyser();
+  const source = audioCtx.createMediaElementSource(audio);
 
-      // Put the generated song in an Audio element.
-      const wave = player.createWave();
-      const audio = document.createElement("audio");
-      audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
-      audio.onplay = () => audioCtx.resume();
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
 
-      // Create an analyser
-      const analyser = audioCtx.createAnalyser();
-      const source = audioCtx.createMediaElementSource(audio);
+  audio.play();
 
-      source.connect(analyser);
-      analyser.connect(audioCtx.destination);
-
-      audio.play();
-
-      run(audioCtx, analyser);
-    }
-  }, 0);
+  run(audioCtx, analyser);
 });

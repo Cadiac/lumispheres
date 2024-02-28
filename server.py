@@ -15,7 +15,7 @@ class BrotliHandler(BaseHTTPRequestHandler):
             self.send_error(404, 'File Not Found: %s' % self.path)
 
 port = 8080
-server_address = ('', port)
+server_address = ('localhost', port)
 httpd = HTTPServer(server_address, BrotliHandler)
 
 print(f'Open http://localhost:{port} and click to watch the entry!')

@@ -2,7 +2,6 @@ precision highp float;
 
 uniform float u_time;
 uniform vec3 u_resolution;
-
 uniform vec3 u_camera;
 uniform vec3 u_target;
 
@@ -10,9 +9,9 @@ const float MAX_DIST = 2000.0;
 const float EPSILON = .0001;
 const int MAX_ITERATIONS = 500;
 
-const vec3 FOG_COLOR = vec3(0.2, 0.32, 0.49);
-const vec3 SKY_COLOR = vec3(0.024, 0.06, 0.11);
-const vec3 COLOR_SHIFT = vec3(1., 0.92, 1.);
+const vec3 FOG_COLOR = vec3(0.2, 0.3, 0.5);
+const vec3 SKY_COLOR = vec3(0.02, 0.06, 0.1);
+const vec3 COLOR_SHIFT = vec3(1., 0.9, 1.);
 
 const float BOX_SIZE = 10.;
 const float BOX_Y = 10.;
@@ -378,11 +377,11 @@ void main() {
   vec3 color = render(u_camera, u_target, sunDir, xy, z);
 
   // Do I actually want these?
-  color = pow(color, COLOR_SHIFT);
-  color *= vec3(1.02, 0.99, 0.9);
-  color.z = color.z + 0.1;
+  // color = pow(color, COLOR_SHIFT);
+  // color *= vec3(1.02, 0.99, 0.9);
+  // color.z = color.z + 0.1;
 
-  color = smoothstep(0.0, 1.0, color);
+  // color = smoothstep(0.0, 1.0, color);
 
   // Fade in
   if (u_time < 2000.) {

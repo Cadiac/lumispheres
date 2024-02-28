@@ -23,8 +23,6 @@
  *
  */
 
-"use strict";
-
 // Some general notes and recommendations:
 //  * This code uses modern ECMAScript features, such as ** instead of
 //    Math.pow(). You may have to modify the code to make it work on older
@@ -33,101 +31,35 @@
 //    or certain effects), you can reduce the size of the player routine even
 //    further by deleting the code.
 
-export var CPlayer = function () {
+// NOTE: This file is a partial version of the "player-small.js" used by Soundbox,
+// with only sin oscillators and partial effects that are in use at this entry.
+// This was then minified further using automatic tooling and used in the demo.
+
+export let CPlayer = function (song) {
+  let mSong = song;
+
+  // Init iteration state letiables
+  let mLastRow = song.endPattern;
+  let mCurrentCol = 0;
+
+  // Prepare song info
+  let mNumWords = song.rowLen * song.patternLen * (mLastRow + 1) * 2;
+
+  // Create work buffer (initially cleared)
+  let mMixBuf = new Int32Array(mNumWords);
+
   //--------------------------------------------------------------------------
   // Private methods
   //--------------------------------------------------------------------------
 
   // Oscillators
-  var osc_sin = function (value) {
+  let osc_sin = (value) => {
     return Math.sin(value * 6.283184);
   };
 
-  var osc_saw = function (value) {
-    return 2 * (value % 1) - 1;
-  };
-
-  var osc_square = function (value) {
-    return value % 1 < 0.5 ? 1 : -1;
-  };
-
-  var osc_tri = function (value) {
-    var v2 = (value % 1) * 4;
-    if (v2 < 2) return v2 - 1;
-    return 3 - v2;
-  };
-
-  var getnotefreq = function (n) {
+  let getnotefreq = (n) => {
     // 174.61.. / 44100 = 0.003959503758 (F3)
-    return 0.003959503758 * 2 ** ((n - 128) / 12);
-  };
-
-  var createNote = function (instr, n, rowLen) {
-    var osc1 = mOscillators[instr.i[0]],
-      o1vol = instr.i[1],
-      o1xenv = instr.i[3] / 32,
-      osc2 = mOscillators[instr.i[4]],
-      o2vol = instr.i[5],
-      o2xenv = instr.i[8] / 32,
-      noiseVol = instr.i[9],
-      attack = instr.i[10] * instr.i[10] * 4,
-      sustain = instr.i[11] * instr.i[11] * 4,
-      release = instr.i[12] * instr.i[12] * 4,
-      releaseInv = 1 / release,
-      expDecay = -instr.i[13] / 16,
-      arp = instr.i[14],
-      arpInterval = rowLen * 2 ** (2 - instr.i[15]);
-
-    var noteBuf = new Int32Array(attack + sustain + release);
-
-    // Re-trig oscillators
-    var c1 = 0,
-      c2 = 0;
-
-    // Local variables.
-    var j, j2, e, t, rsample, o1t, o2t;
-
-    // Generate one note (attack + sustain + release)
-    for (j = 0, j2 = 0; j < attack + sustain + release; j++, j2++) {
-      if (j2 >= 0) {
-        // Switch arpeggio note.
-        arp = (arp >> 8) | ((arp & 255) << 4);
-        j2 -= arpInterval;
-
-        // Calculate note frequencies for the oscillators
-        o1t = getnotefreq(n + (arp & 15) + instr.i[2] - 128);
-        o2t =
-          getnotefreq(n + (arp & 15) + instr.i[6] - 128) *
-          (1 + 0.0008 * instr.i[7]);
-      }
-
-      // Envelope
-      e = 1;
-      if (j < attack) {
-        e = j / attack;
-      } else if (j >= attack + sustain) {
-        e = (j - attack - sustain) * releaseInv;
-        e = (1 - e) * 3 ** (expDecay * e);
-      }
-
-      // Oscillator 1
-      c1 += o1t * e ** o1xenv;
-      rsample = osc1(c1) * o1vol;
-
-      // Oscillator 2
-      c2 += o2t * e ** o2xenv;
-      rsample += osc2(c2) * o2vol;
-
-      // Noise oscillator
-      if (noiseVol) {
-        rsample += (2 * Math.random() - 1) * noiseVol;
-      }
-
-      // Add to (mono) channel buffer
-      noteBuf[j] = (80 * rsample * e) | 0;
-    }
-
-    return noteBuf;
+    return 0.00396 * 2 ** ((n - 128) / 12);
   };
 
   //--------------------------------------------------------------------------
@@ -135,70 +67,37 @@ export var CPlayer = function () {
   //--------------------------------------------------------------------------
 
   // Array of oscillator functions
-  var mOscillators = [osc_sin, osc_square, osc_saw, osc_tri];
 
-  // Private variables set up by init()
-  var mSong, mLastRow, mCurrentCol, mNumWords, mMixBuf;
+  // Private letiables set up by init()
 
   //--------------------------------------------------------------------------
   // Initialization
   //--------------------------------------------------------------------------
-
-  this.init = function (song) {
-    // Define the song
-    mSong = song;
-
-    // Init iteration state variables
-    mLastRow = song.endPattern;
-    mCurrentCol = 0;
-
-    // Prepare song info
-    mNumWords = song.rowLen * song.patternLen * (mLastRow + 1) * 2;
-
-    // Create work buffer (initially cleared)
-    mMixBuf = new Int32Array(mNumWords);
-  };
 
   //--------------------------------------------------------------------------
   // Public methods
   //--------------------------------------------------------------------------
 
   // Generate audio data for a single track
-  this.generate = function () {
+  this.generate = () => {
     // Local variables
-    var i,
-      j,
-      b,
-      p,
-      row,
-      col,
-      n,
-      cp,
-      k,
-      t,
-      lfor,
-      e,
-      x,
-      rsample,
-      rowStartSample,
-      f,
-      da;
+    let i, j, p, row, col, n, cp, k, t, rsample, rowStartSample, f;
 
     // Put performance critical items in local variables
-    var chnBuf = new Int32Array(mNumWords),
+    let chnBuf = new Int32Array(mNumWords),
       instr = mSong.songData[mCurrentCol],
       rowLen = mSong.rowLen,
       patternLen = mSong.patternLen;
 
     // Clear effect state
-    var low = 0,
+    let low = 0,
       band = 0,
       high;
-    var lsample,
+    let lsample,
       filterActive = false;
 
     // Clear note cache.
-    var noteCache = [];
+    let noteCache = [];
 
     // Patterns
     for (p = 0; p <= mLastRow; ++p) {
@@ -207,7 +106,7 @@ export var CPlayer = function () {
       // Pattern rows
       for (row = 0; row < patternLen; ++row) {
         // Execute effect command.
-        var cmdNo = cp ? instr.c[cp - 1].f[row] : 0;
+        let cmdNo = cp ? instr.c[cp - 1].f[row] : 0;
         if (cmdNo) {
           instr.i[cmdNo - 1] = instr.c[cp - 1].f[row + patternLen] || 0;
 
@@ -218,7 +117,7 @@ export var CPlayer = function () {
         }
 
         // Put performance critical instrument properties in local variables
-        var oscLFO = mOscillators[instr.i[16]],
+        let oscLFO = osc_sin,
           lfoAmt = instr.i[17] / 512,
           lfoFreq = 2 ** (instr.i[18] - 9) / rowLen,
           fxLFO = instr.i[19],
@@ -240,11 +139,64 @@ export var CPlayer = function () {
           n = cp ? instr.c[cp - 1].n[row + col * patternLen] : 0;
           if (n) {
             if (!noteCache[n]) {
-              noteCache[n] = createNote(instr, n, rowLen);
+              let o1vol = instr.i[1],
+                o1xenv = instr.i[3] / 32,
+                o2vol = instr.i[5],
+                o2xenv = instr.i[8] / 32,
+                noiseVol = instr.i[9],
+                attack = instr.i[10] * instr.i[10] * 4,
+                sustain = instr.i[11] * instr.i[11] * 4,
+                release = instr.i[12] * instr.i[12] * 4,
+                releaseInv = 1 / release,
+                expDecay = -instr.i[13] / 16;
+
+              let noteBuf = new Int32Array(attack + sustain + release);
+
+              // Re-trig oscillators
+              let c1 = 0,
+                c2 = 0;
+
+              // Local letiables.
+              let j, e, rsample, o1t, o2t;
+
+              // Generate one note (attack + sustain + release)
+              for (j = 0; j < attack + sustain + release; j++) {
+                // Calculate note frequencies for the oscillators
+                o1t = getnotefreq(n + instr.i[2] - 128);
+                o2t =
+                  getnotefreq(n + instr.i[6] - 128) * (1 + 0.0008 * instr.i[7]);
+
+                // Envelope
+                e = 1;
+                if (j < attack) {
+                  e = j / attack;
+                } else if (j >= attack + sustain) {
+                  e = (j - attack - sustain) * releaseInv;
+                  e = (1 - e) * 3 ** (expDecay * e);
+                }
+
+                // Oscillator 1
+                c1 += o1t * e ** o1xenv;
+                rsample = osc_sin(c1) * o1vol;
+
+                // Oscillator 2
+                c2 += o2t * e ** o2xenv;
+                rsample += osc_sin(c2) * o2vol;
+
+                // Noise oscillator
+                if (noiseVol) {
+                  rsample += (2 * Math.random() - 1) * noiseVol;
+                }
+
+                // Add to (mono) channel buffer
+                noteBuf[j] = (80 * rsample * e) | 0;
+              }
+
+              noteCache[n] = noteBuf;
             }
 
             // Copy note from the note cache
-            var noteBuf = noteCache[n];
+            let noteBuf = noteCache[n];
             for (
               j = 0, i = rowStartSample * 2;
               j < noteBuf.length;
@@ -321,25 +273,13 @@ export var CPlayer = function () {
     return mCurrentCol / mSong.numChannels;
   };
 
-  // Create a AudioBuffer from the generated audio data
-  this.createAudioBuffer = function (context) {
-    var buffer = context.createBuffer(2, mNumWords / 2, 44100);
-    for (var i = 0; i < 2; i++) {
-      var data = buffer.getChannelData(i);
-      for (var j = i; j < mNumWords; j += 2) {
-        data[j >> 1] = mMixBuf[j] / 65536;
-      }
-    }
-    return buffer;
-  };
-
   // Create a WAVE formatted Uint8Array from the generated audio data
-  this.createWave = function () {
+  this.createWave = () => {
     // Create WAVE header
-    var headerLen = 44;
-    var l1 = headerLen + mNumWords * 2 - 8;
-    var l2 = l1 - 36;
-    var wave = new Uint8Array(headerLen + mNumWords * 2);
+    let headerLen = 44;
+    let l1 = headerLen + mNumWords * 2 - 8;
+    let l2 = l1 - 36;
+    let wave = new Uint8Array(headerLen + mNumWords * 2);
     wave.set([
       82,
       73,
@@ -388,9 +328,9 @@ export var CPlayer = function () {
     ]);
 
     // Append actual wave data
-    for (var i = 0, idx = headerLen; i < mNumWords; ++i) {
+    for (let i = 0, idx = headerLen; i < mNumWords; ++i) {
       // Note: We clamp here
-      var y = mMixBuf[i];
+      let y = mMixBuf[i];
       y = y < -32767 ? -32767 : y > 32767 ? 32767 : y;
       wave[idx++] = y & 255;
       wave[idx++] = (y >> 8) & 255;
@@ -398,16 +338,5 @@ export var CPlayer = function () {
 
     // Return the WAVE formatted typed array
     return wave;
-  };
-
-  // Get n samples of wave data at time t [s]. Wave data in range [-2,2].
-  this.getData = function (t, n) {
-    var i = 2 * Math.floor(t * 44100);
-    var d = new Array(n);
-    for (var j = 0; j < 2 * n; j += 1) {
-      var k = i + j;
-      d[j] = t > 0 && k < mMixBuf.length ? mMixBuf[k] / 32768 : 0;
-    }
-    return d;
   };
 };

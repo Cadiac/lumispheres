@@ -9,8 +9,8 @@ const float MAX_DIST = 2000.0;
 const float EPSILON = .0001;
 const int MAX_ITERATIONS = 500;
 
-const vec3 FOG_COLOR = vec3(0.2, 0.3, 0.5);
-const vec3 SKY_COLOR = vec3(0.02, 0.06, 0.1);
+const vec3 FOG_COLOR = vec3(0.5, 0.3, 0.2);
+const vec3 SKY_COLOR = vec3(0.9, 0.96, 0.91);
 const vec3 COLOR_SHIFT = vec3(1., 0.9, 1.);
 
 const float BOX_SIZE = 10.;
@@ -139,8 +139,8 @@ vec3 sky(in vec3 camera, in vec3 dir) {
   vec3 color = SKY_COLOR - .5 * dir.y;
 
   // Fade to fog further away
-  float dist = dir.y < 0. ? 100000000. : (25000. - camera.y) / dir.y;
-  vec3 e = exp2(-abs(dist) * .00001 * COLOR_SHIFT);
+  float dist = dir.y < 0. ? 100000000. : (250. - camera.y) / dir.y;
+  vec3 e = exp2(-abs(dist) * .001 * COLOR_SHIFT);
   color = color * e + (1.0 - e) * FOG_COLOR;
 
   return color;
@@ -177,7 +177,7 @@ float sphereLight(vec3 p, vec3 normal, vec4 sphere) {
 
   float c = dot(normal, dir);
   float s = floor(sphere.w) / dist;
-  float i = fract(sphere.w);
+  float i = fract(sphere.w) * 1.2;
 
   return max(0., c * s * i);
 }
@@ -222,9 +222,9 @@ vec3 shade(vec3 p, vec3 rayDir, vec3 normal, float id) {
 
   vec3 color = base * occ * occFloor * 0.4;
 
-  color += 1.0 * light + 1.0 * (id >= SPHERE
-                                    ? sphereLightColor * fract(currentSphere.w)
-                                    : vec3(0.0));
+  color += 1.0 * light +
+           1.0 * (id >= SPHERE ? sphereLightColor * fract(currentSphere.w) * 2.
+                               : vec3(0.0));
 
   return color;
 }
@@ -335,7 +335,7 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
     color = mix(color, light, fresnel);
 
     // Fog
-    vec3 fog = exp2(-rayDist * 0.005 * COLOR_SHIFT);
+    vec3 fog = exp2(-rayDist * 0.002 * COLOR_SHIFT);
 
     if (ray.d.x != FLOOR_BOTTOM) {
       color = color * fog + (1. - fog) * FOG_COLOR;
@@ -376,17 +376,18 @@ void main() {
 
   vec3 color = render(u_camera, u_target, sunDir, xy, z);
 
-  // Color shift taken from some IQ production - do I actually want these?
-  color = pow(color, COLOR_SHIFT);
-  color *= vec3(1.02, 0.99, 0.9);
-  color.z = color.z + 0.1;
-
-  color = smoothstep(0.0, 1.0, color);
+  // Color shift taken from some IQ production in outdoor lightning
+  // - do I actually want these?
+  // color = pow(color, COLOR_SHIFT);
+  // color *= vec3(1.02, 0.99, 0.9);
+  // color.z = color.z + 0.1;
 
   // Fade in
-  if (u_time < 5000.) {
-    color = mix(color, vec3(0.), (5000. - u_time) / 5000.);
+  if (u_time < 2000.) {
+    color = mix(color, vec3(0.), (2000. - u_time) / 2000.);
   }
+
+  color = smoothstep(0.0, 1.0, color);
 
   gl_FragColor = vec4(color, 1.0);
 }

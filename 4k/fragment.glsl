@@ -11,7 +11,6 @@ const int MAX_ITERATIONS = 500;
 
 const vec3 FOG_COLOR = vec3(0.5, 0.3, 0.2);
 const vec3 SKY_COLOR = vec3(0.9, 0.96, 0.91);
-const vec3 COLOR_SHIFT = vec3(1., 0.9, 1.);
 
 const float BOX_SIZE = 10.;
 const float BOX_Y = 10.;
@@ -140,7 +139,7 @@ vec3 sky(in vec3 camera, in vec3 dir) {
 
   // Fade to fog further away
   float dist = dir.y < 0. ? 100000000. : (250. - camera.y) / dir.y;
-  vec3 e = exp2(-abs(dist) * .001 * COLOR_SHIFT);
+  vec3 e = exp2(-abs(dist) * .001 * vec3(1.0));
   color = color * e + (1.0 - e) * FOG_COLOR;
 
   return color;
@@ -335,7 +334,7 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
     color = mix(color, light, fresnel);
 
     // Fog
-    vec3 fog = exp2(-rayDist * 0.002 * COLOR_SHIFT);
+    vec3 fog = exp2(-rayDist * 0.002 * vec3(1.0));
 
     if (ray.d.x != FLOOR_BOTTOM) {
       color = color * fog + (1. - fog) * FOG_COLOR;

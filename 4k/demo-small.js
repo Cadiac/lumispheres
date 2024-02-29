@@ -1,6 +1,39 @@
 S = Math.sin
 C = Math.cos
 
+addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    // Stop the demo by crashing it
+    E = 1e9
+    a.close()
+  }
+})
+
+// Music player, based on the "player-small.js".
+// Modified to contain only partial functionality to save some space.
+// https://gitlab.com/mbitsnbites/soundbox
+/* Original copyright below:
+ * Copyright (c) 2011-2013 Marcus Geelnard
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ *
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ *
+ * 3. This notice may not be removed or altered from any source
+ *    distribution.
+ */
 M = function (i) {
   let t = i.e,
     n = 0,
@@ -219,13 +252,16 @@ e = (sphere1, sphere2) => {
   }
 }
 
+// onclick = async () => {
 onclick = async () => {
-  // Note that the long keys in the song output json have been renamed with their first characters
-  // song: https://sb.bitsnbites.eu/?data=U0JveA4C7d3NahNRFADgMzOpiBR1Kyhkp-CiiwqCInQjuCtSFwXBuuxCEKQILqQhoQwtoVVKRYS2D-ADuHDlU_gE4rKPEOcvaYkEF3bRpt9351zuufOTO5fsDiE_b0TMRvty3OxEEbNl9iRq6SCivZR1W1khSesWvdgpzu3Ul-z0ohvbxWC7zre7sbUVn6KMQtltbkbdCnvVldvxpYryiOgX7XMV5RHxsTqK2N-vHrlbHUUcHsZpyJvH1Q_PY6P5uGaJ5Xr3YrNaatUN36ffr5baH1_vMN9t2siHek-qvnjTjfJDNv5__b2xfHz_z7rhPk8y3OdJ5__a5zGntc8AAAAAAMAF8rwTsTKhUlYmo0rZ2tiNb8_Zi74by99MmB_q-W4AAAAAAABMt8HaYhGxFK1Lj-_VU-nViHY1SiIdVcry5oZ8NDqf8lHkJ8YAAAAAAABcPP06nrauzN0vht9nIjnKo_1q5nqrLJUNf1UWeaO-67i-dLI_y_J_BAAAAAAAABdNp473kTxsZpIfX-PW7Ww5KwtlSdNUkwAAAAAAAJgu66sL0V2NhV-tO3fni_z3pST7di3andbxNVWlrKRaBgAAAAAAwLTIBp2IQT9iPU3nHhUTL7Mke7EYK8_S2VGtbFQpUysDAAAAAABgejT_UzY4ODgo0_k0SR8cRXs52U9PVMgieW2rAAAAAAAAmCJ_AA
+  // Note that the long keys in the song output json have been renamed with their first characters.
+  // Simple song created on Soundbox online editor
+  // Song: https://sb.bitsnbites.eu/?data=U0JveA4C7d3NahNRFADgMzOpiBR1Kyhkp-CiiwqCInQjuCtSFwXBuuxCEKQILqQhoQwtoVVKRYS2D-ADuHDlU_gE4rKPEOcvaYkEF3bRpt9351zuufOTO5fsDiE_b0TMRvty3OxEEbNl9iRq6SCivZR1W1khSesWvdgpzu3Ul-z0ohvbxWC7zre7sbUVn6KMQtltbkbdCnvVldvxpYryiOgX7XMV5RHxsTqK2N-vHrlbHUUcHsZpyJvH1Q_PY6P5uGaJ5Xr3YrNaatUN36ffr5baH1_vMN9t2siHek-qvnjTjfJDNv5__b2xfHz_z7rhPk8y3OdJ5__a5zGntc8AAAAAAMAF8rwTsTKhUlYmo0rZ2tiNb8_Zi74by99MmB_q-W4AAAAAAABMt8HaYhGxFK1Lj-_VU-nViHY1SiIdVcry5oZ8NDqf8lHkJ8YAAAAAAABcPP06nrauzN0vht9nIjnKo_1q5nqrLJUNf1UWeaO-67i-dLI_y_J_BAAAAAAAABdNp473kTxsZpIfX-PW7Ww5KwtlSdNUkwAAAAAAAJgu66sL0V2NhV-tO3fni_z3pST7di3andbxNVWlrKRaBgAAAAAAwLTIBp2IQT9iPU3nHhUTL7Mke7EYK8_S2VGtbFQpUysDAAAAAABgejT_UzY4ODgo0_k0SR8cRXs52U9PVMgieW2rAAAAAAAAmCJ_AA
   // prettier-ignore
   m = new M({
     s:[
-      {i:[0,28,128,0,0,28,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],
+      {
+        i:[0,28,128,0,0,28,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],
         p:[3,3,3,3,1,2,1,2,1,2,1,2],
         c:[
           {n:[131,,143,,,,143,,,,,,,143,131,,130,,142,,,,142,,,,,,,142,130,,138,138,,150,,138,,150,,,,,150,,,,137,137,,137,,137,,137,,,,,149,,,,142,,142,,154,,142,,154,,,154,,,,,140,,140,,152,,140,,152,,,152,,,,,145,,,145,,,,145,,157,157,,,,,,147,,,147,,,,147,,159,159],f:[]},
@@ -233,37 +269,46 @@ onclick = async () => {
           {n:[131,,,,,,,,,,,,,,,,130,,142,,,,142,,,,,,,142,130],f:[]}
         ]
       },
-      {i:[0,91,128,0,0,95,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],
+      {
+        i:[0,91,128,0,0,95,128,12,0,0,12,0,72,0,0,0,0,0,0,0,2,255,0,0,32,83,3,130,4],
         p:[,,,,1,2,1,2,1,2,1,2],
         c:[
           {n:[116,,,,,,,,,,,,,,,,118],f:[]},
           {n:[121,,,,,,,,,,,,,,,,114,,,,,,,,121,,,,,,,,,,,,,,,,,,,,,,,,131],f:[]}
         ]
       },
-      {i:[0,255,116,79,0,255,116,0,83,0,4,6,69,52,0,0,0,0,0,0,2,14,0,0,32,0,0,0,0],
+      {
+        i:[0,255,116,79,0,255,116,0,83,0,4,6,69,52,0,0,0,0,0,0,2,14,0,0,32,0,0,0,0],
         p:[,1,,2,1,2,1,2,1,2,1,2],
         c:[
           {n:[135,,,,,,,,135,,135],f:[]},
           {n:[,,,,,,,,135,,,,135,,,,135,,135,,135,,,,135,,,,135],f:[]}
         ]
       },
-      {i:[0,0,140,0,0,0,140,0,0,81,4,10,47,55,0,0,0,187,5,0,1,239,135,0,32,108,5,16,4],
+      {
+        i:[0,0,140,0,0,0,140,0,0,81,4,10,47,55,0,0,0,187,5,0,1,239,135,0,32,108,5,16,4],
         p:[,,1,,,,1,2,1,2,1,2],
         c:[
           {n:[135,135,135,135,135,135,135,135,,,,,,,135,,,,135,,,,,,135,,,,,,135],f:[]},
           {n:[135,,,,135,,,,135,,,,135,,,,135,,,,135,,,,135,,,,135],f:[]}
         ]
       },
-      {i:[0,0,128,0,0,0,128,0,0,125,0,1,59,0,0,0,0,0,0,0,1,193,171,0,29,39,3,88,3],
+      {
+        i:[0,0,128,0,0,0,128,0,0,125,0,1,59,0,0,0,0,0,0,0,1,193,171,0,29,39,3,88,3],
         p:[,1,,,1,,1,,1,,1],
         c:[{n:[135],f:[]}]},
-      {i:[0,127,104,64,0,130,104,0,64,229,4,40,43,51,0,0,0,231,6,1,3,183,15,0,32,128,4,0,0],
+      {
+        i:[0,127,104,64,0,130,104,0,64,229,4,40,43,51,0,0,0,231,6,1,3,183,15,0,32,128,4,0,0],
         p:[,,,,,,,,1,,1],
         c:[{n:[,,,,135],f:[]}]},
-      {i:[3,255,128,0,0,255,140,0,0,127,2,2,47,61,0,0,0,100,3,1,3,94,79,0,95,84,2,12,4],
+      {
+        i:[3,255,128,0,0,255,140,0,0,127,2,2,47,61,0,0,0,100,3,1,3,94,79,0,95,84,2,12,4],
         p:[,,,,,,,,1,,1],c:[{n:[,,,,,,135],f:[]}]},
-      {i:[0,0,140,0,0,0,140,0,0,255,158,158,158,0,0,0,0,51,2,1,2,58,239,0,32,88,1,157,2],
-        p:[1,,1,,,,,,,,,,1],c:[{n:[111],f:[]}]}
+      {
+        i:[0,0,140,0,0,0,140,0,0,255,158,158,158,0,0,0,0,51,2,1,2,58,239,0,32,88,1,157,2],
+        p:[1,,1,,,,,,,,,,1],
+        c:[{n:[111],f:[]}]
+      }
     ],
     r:7000,
     p:32,
@@ -277,17 +322,6 @@ onclick = async () => {
 
   // Generate all song channels
   while (m.g() < 1);
-
-  // document.addEventListener(
-  //   'keydown',
-  //   (e) => {
-  //     if (e.key === 'Escape') {
-  //       halt = true;
-  //       a.close()
-  //     }
-  //   },
-  //   true
-  // )
 
   u = (loc) => g.getUniformLocation(p, loc)
 
@@ -375,16 +409,16 @@ onclick = async () => {
     // Collisions with walls
     s.map((sphere) => {
       for (i = 0; i < 3; i++) {
-        let min = i == 1 ? 10 : -10,
-          max = i == 1 ? 30 : 10
-        if (sphere.p[i] - sphere.r < min) {
+        x = i == 1 ? 10 : -10
+        y = i == 1 ? 30 : 10
+        if (sphere.p[i] - sphere.r < x) {
           sphere.v[i] = -sphere.v[i] * 0.8
-          sphere.p[i] = min + sphere.r
+          sphere.p[i] = x + sphere.r
           sphere.i = 0.99
         }
-        if (sphere.p[i] + sphere.r > max) {
+        if (sphere.p[i] + sphere.r > y) {
           sphere.v[i] = -sphere.v[i] * 0.8
-          sphere.p[i] = max - sphere.r
+          sphere.p[i] = y - sphere.r
           sphere.i = 0.99
         }
       }
@@ -398,20 +432,20 @@ onclick = async () => {
 
     g.useProgram(p)
 
-    g.uniform1f(u('u_time'), o) // Time
-    g.uniform3f(u('u_resolution'), ...r) // Resolution
-    g.uniform3f(u('u_camera'), ...P) // Camera position
-    g.uniform3f(u('u_target'), ...T) // Camera target
+    // g.uniform1f(u('u_time'), o) // Time
+    // g.uniform3f(u('u_resolution'), ...r) // Resolution
+    // g.uniform3f(u('u_camera'), ...P) // Camera position
+    // g.uniform3f(u('u_target'), ...T) // Camera target
 
-    // g.uniform1f(u('v'), o) // Time
-    // g.uniform3f(u('d'), ...r) // Resolution
-    // g.uniform3f(u('f'), ...P) // Camera position
-    // g.uniform3f(u('m'), ...T) // Camera target
+    g.uniform1f(u('v'), o) // Time
+    g.uniform3f(u('d'), ...r) // Resolution
+    g.uniform3f(u('f'), ...P) // Camera position
+    g.uniform3f(u('m'), ...T) // Camera target
 
     // Spheres
     g.uniform4fv(
-      // u('n'),
-      u('u_spheres'),
+      u('n'),
+      // u('u_spheres'),
       s.flatMap((s) => [
         ...s.p,
         // w component of vec4 carries radius in its integer part,
@@ -451,9 +485,12 @@ onclick = async () => {
   g.attachShader(p, b)
 
   b = g.createShader(0x8b30) // g.FRAGMENT_SHADER
-  fs = await fetch('4k/fragment.glsl').then((r) => r.text())
+  // fs = await fetch('4k/fragment.glsl').then((r) => r.text())
 
-  g.shaderSource(b, fs)
+  g.shaderSource(
+    b,
+    `precision highp float;uniform float v;uniform vec3 d,f,m;const vec3 c=vec3(.5,.3,.2),i=vec3(.9,.96,.91);uniform vec4 n[13];struct R{vec2 d;vec3 m;int i;bool h;};vec2 t(vec2 d,vec2 m){return d.y<m.y?d:m;}float t(vec3 v){return dot(v,v);}float t(vec3 v,vec3 m,vec3 d,vec3 z,vec3 y){vec3 f=d-m,x=v-m,i=z-d,w=v-d,c=y-z,n=v-z,a=m-y,h=v-y,l=cross(f,a);return sqrt(sign(dot(cross(f,l),x))+sign(dot(cross(i,l),w))+sign(dot(cross(c,l),n))+sign(dot(cross(a,l),h))<3.?min(min(min(t(f*clamp(dot(f,x)/t(f),0.,1.)-x),t(i*clamp(dot(i,w)/t(i),0.,1.)-w)),t(c*clamp(dot(c,n)/t(c),0.,1.)-n)),t(a*clamp(dot(a,h)/t(a),0.,1.)-h)):dot(l,x)*dot(l,x)/t(l));}float s(vec3 v){vec3 d=abs(v)-vec3(10);return length(max(d,0.))+min(max(d.x,max(d.y,d.z)),0.);}vec4 x;vec2 r(vec3 v){vec2 d=vec2(1,dot(v,vec3(0,1,0)));float f=s(v-vec3(0,20,0));if(f<d.y){vec2 m=vec2(5,t(v,vec3(10,10,-10),vec3(10,30,-10),vec3(-10,30,-10),vec3(-10,10,-10)));m=t(m,vec2(3,t(v,vec3(10),vec3(10,10,-10),vec3(10,30,-10),vec3(10,30,10))));m=t(m,vec2(4,t(v,vec3(-10,10,10),vec3(-10,10,-10),vec3(-10,30,-10),vec3(-10,30,10))));m=t(m,vec2(2,t(v,vec3(10,30,10),vec3(-10,30,10),vec3(-10,30,-10),vec3(10,30,-10))));m=t(m,vec2(1,t(v,vec3(10),vec3(-10,10,10),vec3(-10,10,-10),vec3(10,10,-10))));for(int i=0;i<13;++i){vec2 c=vec2(7.+float(i),length(v-n[i].xyz)-floor(n[i].w));if(c.y<m.y)m=c,x=n[i];}if(m.y<d.y)return m;}return d;}vec3 r(vec3 d,vec3 v){vec3 m=exp2(-abs(v.y<0.?1e8:(250.-d.y)/v.y)*.001*vec3(1));return(i-.5*v.y)*m+(1.-m)*c;}float r(vec3 m,vec3 v,vec4 d){vec3 f=d.xyz-m;float c=length(f),i=dot(v,f),x=i,l=floor(d.w);if(i<l)x=pow(clamp((i+l)/(2.*l),0.,1.),1.5)*l;return clamp(l*l*x/(c*c*c),0.,1.);}float s(vec3 v,vec3 m){float d=1.;for(int i=0;i<13;i++)d*=1.-r(v,m,n[i]);return d;}float s(vec3 m,vec3 v,vec4 d){vec3 f=d.xyz-m;float x=sqrt(dot(f,f));return max(0.,dot(v,f/x)*(floor(d.w)/x)*(fract(d.w)*1.2));}vec3 p(float d){return vec3(.37,.1,.1)+vec3(.68,.29,.29)*cos(6.283184*(vec3(.04,.04,.8)*sin(10.*d+v/1e3)+vec3(.19)));}vec3 p(vec3 d,vec3 v,vec3 m,float f){vec3 c=p(f-7./float(13));float i=s(d,m);vec3 t=vec3(0);for(int y=0;y<13;y++)t+=s(d,m,n[y])*p(float(y)/float(13));vec3 r=vec3(1)*i*(1.-sqrt((.5+.5*-m.y)/(d.y+.5))*.5)*.4;r+=t+(f>=7.?c*fract(x.w)*2.:vec3(0));return r;}R p(vec3 v,vec3 d){float m=1e-4,c=1e-4;R f;for(int i=0;i<500;i++){m=.001*c;f.m=v+c*d;f.d=r(f.m);if(f.d.y<m){f.h=true;f.i=i;break;}c+=f.d.y;if(c>=2e3)break;}f.d.y=c;return f;}float p(vec2 v,vec2 d,vec2 f){vec2 m=max(abs(d),abs(f))+.01,i=v+.5*m,x=v-.5*m,c=(floor(i)+min(fract(i)*60.,1.)-floor(x)-min(fract(x)*60.,1.))/(60.*m);return(1.-c.x)*(1.-c.y);}mat4 e(vec3 m,vec3 v){vec3 d=normalize(v-m),f=normalize(cross(normalize(vec3(0,1,0)),d));return mat4(vec4(f,0),vec4(cross(d,f),0),vec4(-d,0),vec4(0,0,0,1));}vec3 e(vec3 v,vec3 m,vec2 d,float f){vec3 i=vec3(-.0123,.02,-.9997);mat4 l=e(v,m);vec3 y=(l*vec4(normalize(vec3(d,-f)),0)).xyz,a=(l*vec4(normalize(vec3(d+vec2(1,0),-f)),0)).xyz,n=(l*vec4(normalize(vec3(d+vec2(0,1),-f)),0)).xyz,t=vec3(0);float z=1.,h=0.;for(int b=0;b<5;b++){R s=p(v,y);if(!s.h){t=mix(t,r(v,y),z);float w=clamp(dot(i,y),0.,1.);t+=.5*vec3(1,.5,.2)*pow(w,10.);break;}h+=s.d.y;vec3 w;w=s.d.x>=7.?normalize(s.m-x.xyz):s.d.x==1.?vec3(0,1,0):s.d.x==2.?vec3(0,-1,0):s.d.x==3.?vec3(-1,0,0):s.d.x==4.?vec3(1,0,0):s.d.x==5.?vec3(0,0,1):vec3(0,0,-1);vec3 C=p(s.m,y,w,s.d.x);t=mix(t,C,z);vec3 F=exp2(-h*.002*vec3(1));if(s.d.x!=1.){t=t*F+(1.-F)*c;break;}z=clamp(1.+dot(y,w),0.,1.);z=.01+.4*pow(z,3.5)+.5;vec3 E=v-a*dot(v-s.m,w)/dot(a,w),D=v-n*dot(v-s.m,w)/dot(n,w);float k=p(.5*s.m.xz,.5*(E.xz-s.m.xz),.5*(D.xz-s.m.xz));z*=.5*k;t*=k;t=t*F+(1.-F)*c;v=s.m;y=reflect(y,w);}return t;}void main(){vec2 i=gl_FragCoord.xy-d.xy/2.;vec3 x=e(f,m,i,d.y/tan(.5));if(v<2e3)x=mix(x,vec3(0),(2e3-v)/2e3);x=smoothstep(0.,1.,x);gl_FragColor=vec4(x,1);}`
+  )
   g.compileShader(b)
   g.attachShader(p, b)
   g.linkProgram(p)
@@ -483,6 +520,6 @@ onclick = async () => {
 
   o = q = 0
 
-  // c.requestFullscreen().then(R)
-  R()
+  c.requestFullscreen().then(R)
+  // R()
 }

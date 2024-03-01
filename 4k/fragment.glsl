@@ -371,7 +371,7 @@ void main() {
   vec2 xy = gl_FragCoord.xy - u_resolution.xy / 2.0;
   float z = u_resolution.y / tan(0.5);
 
-  vec3 sunDir = vec3(-0.0123, 0.02, -0.9997);
+  vec3 sunDir = vec3(0, 0, -1);
 
   vec3 color = render(u_camera, u_target, sunDir, xy, z);
 
@@ -382,9 +382,9 @@ void main() {
   // color.z = color.z + 0.1;
 
   // Fade in
-  if (u_time < 2000.) {
-    color = mix(color, vec3(0.), (2000. - u_time) / 2000.);
-  }
+  // if (u_time < 2000.) {
+  //   color = mix(color, vec3(0.), (2000. - u_time) / 2000.);
+  // }
 
   color = smoothstep(0.0, 1.0, color);
 

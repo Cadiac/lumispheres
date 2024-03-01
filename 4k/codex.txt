@@ -32,7 +32,7 @@ D = Director
 C = Math.cos
 S = Math.sin
 M = CPlayer
-R = render
+Y = render
 U = update
 P = camera position
 T = camera target
@@ -43,3 +43,6 @@ I = sub
 J = mul
 K = div
 L = sum
+
+W = socket
+Y = Math.random

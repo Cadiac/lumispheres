@@ -12,7 +12,7 @@
     "minify-js": "mkdir -p dist && npx uglify-js --compress --mangle --mangle-props --toplevel -- 4k/demo-small.js > dist/demo.min.js",
     "build-html": "printf 'Click!<canvas id=c><script>' > dist/index.html && sed '$s/;*$//' dist/demo.min.js | tr -d '\\n' >> dist/index.html && printf '</script>' >> dist/index.html",
     "compress": "brotli -f -Z -o entry/index.html.br dist/index.html",
-    "build": "npm run minify-js && npm run build-html && npm run compress"
+    "build": "npm run minify-js && npm run build-html && npm run compress && wc -c entry/index.html.br"
   },
   "devDependencies": {
     "vite": "^5.0.8"

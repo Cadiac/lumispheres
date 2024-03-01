@@ -1,5 +1,6 @@
 S = Math.sin
 C = Math.cos
+Y = Math.random
 
 addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
@@ -114,7 +115,7 @@ M = function (i) {
                   (t = l(g) * a),
                   (I += r * i ** s),
                   (t += l(I) * h),
-                  w && (t += (2 * Math.random() - 1) * w),
+                  w && (t += (2 * Y() - 1) * w),
                   (M[e] = (80 * t * i) | 0)
               U[c] = M
             }
@@ -522,7 +523,7 @@ onclick = () => {
     // Sphere struct
     ((r) => ({
       p: [0, 20, 0], // position
-      v: K([r, r, r], 3), // velocity
+      v: [-0.5 + Y(), -0.5 + Y(), -0.5 + Y()], // velocity
       i: 0, // illumination
       r, // radius
       m: 4 * r ** 3 // mass

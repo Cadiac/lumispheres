@@ -252,6 +252,7 @@ e = (sphere1, sphere2) => {
   }
 }
 
+// While developing and loading the fragment shader by fetch this needs to be turned async
 // onclick = async () => {
 onclick = () => {
   // Note that the long keys in the song output json have been renamed with their first characters.
@@ -317,15 +318,17 @@ onclick = () => {
   })
   a = new AudioContext()
 
-  // Initialize this early to give the first tick bunch of dt and move the spheres a lot
+  // Initialize the epoch early to make the first tick have some dt
+  // to move the overlapping spheres and not divide by zero
   E = performance.now()
 
   // Generate all song channels
   while (m.g() < 1);
 
-  u = (loc) => g.getUniformLocation(p, loc)
-
-  // Camera movements and gravity changes
+  // Camera movements and gravity changes.
+  // 0 = Starting position of the camera
+  // 1 = Movement function to apply. Variable starts from 0 at each cut
+  // 2 = Gravity
   D = [
     // Circling around the box
     [
@@ -381,29 +384,30 @@ onclick = () => {
     t = (o - q) / 1000
     q = o
 
-    // Camera directions
+    // Apply camera movements. Macig number 9600 is calculated from the BPM 100
+    // This also stops the demo by crashing it once index goes out of bounds.
+    // Not elegant, but reliable and takes zero space so yay?
     ;[x, y, z] = D[(o / 9600) | 0]
     P = H(
       x,
       y.map((y) => (y ? y((o % 9600) / 1000) : 0))
     )
+
+    // Also apply new gravity if it is defined
     z && (G = z)
 
-    // Slowing and speeding up the time based on beat
+    // Slowing and speeding up the simulation time based on FFT from the beat
     n.getByteFrequencyData(f)
-    // offset: 90 // Hihat
-    // offset: 6, // bass
-    // offset: 22, // generic
-    t = 0.5 * t + (t * f[90]) / 32
+    t = 0.5 * t + (t * f[90]) / 32 // 90: Hihat, 6: Bass, 22: Overall mood
 
-    // Gravity & fading the illuminated spheres over time
+    // Gravity & fading the illuminated spheres back to dark over time
     s.map((sphere) => {
       sphere.i = Math.max(0, sphere.i - 6 * t * (1 - sphere.i))
       sphere.v = H(sphere.v, J(G, [t, t, t]))
       sphere.p = H(sphere.p, J(sphere.v, [t, t, t]))
     })
 
-    // Spheres colliding with each other
+    // Spheres collisions with each other
     for (i = 0; i < 13; i++) for (j = i + 1; j < 13; j++) e(s[i], s[j])
 
     // Collisions with walls
@@ -414,7 +418,7 @@ onclick = () => {
         if (sphere.p[i] - sphere.r < x) {
           sphere.v[i] = -sphere.v[i] * 0.8
           sphere.p[i] = x + sphere.r
-          sphere.i = 0.99
+          sphere.i = 0.99 // After colliding set the brightness to max
         }
         if (sphere.p[i] + sphere.r > y) {
           sphere.v[i] = -sphere.v[i] * 0.8
@@ -437,6 +441,7 @@ onclick = () => {
     // g.uniform3f(u('u_camera'), ...P) // Camera position
     // g.uniform3f(u('u_target'), ...T) // Camera target
 
+    // Make sure these match what the shader minifier produces!
     g.uniform1f(u('v'), o) // Time
     g.uniform3f(u('d'), ...r) // Resolution
     g.uniform3f(u('f'), ...P) // Camera position
@@ -466,6 +471,8 @@ onclick = () => {
   c.style.left = c.style.top = 0
 
   g = c.getContext('webgl')
+  u = (loc) => g.getUniformLocation(p, loc)
+
   p = g.createProgram()
 
   d.src = URL.createObjectURL(new Blob([m.c()], { type: 'audio/wav' }))
@@ -505,8 +512,12 @@ onclick = () => {
   g.enableVertexAttribArray(0)
   g.vertexAttribPointer(0, 2, 0x1406, false, 0, 0) // g.FLOAT
 
+  // Initial position of the Camera & Gravity
   P = G = [0, 0, 0]
+  // Target point of the camera. This stays constant at the moment?
   T = [0, 20, 0]
+
+  // Spheres
   s = [...Array(13)].map((_, i) =>
     // Sphere struct
     ((r) => ({
@@ -518,6 +529,7 @@ onclick = () => {
     }))((i % 3) + 1)
   )
 
+  // Time and last frame time
   o = q = 0
 
   c.requestFullscreen().then(R)

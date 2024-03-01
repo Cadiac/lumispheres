@@ -6,11 +6,13 @@
   "main": "src/main.js",
   "scripts": {
     "dev-vite": "vite",
-    "build-vite": "vite build",
     "dev": "npx serve .",
-    "minify:shader": "mono ~/Applications/shader_minifier.exe -o tmp/fragment.min.glsl --format text 4k/fragment.glsl",
-    "minify:js": "npx uglify-js --compress --mangle --mangle-props --toplevel  -- 4k/demo-small.js > tmp/demo.min.js",
-    "minify:compress": "node compress.js"
+    "start": "python3 server.py",
+    "minify-shader": "mono ~/Applications/shader_minifier.exe -o dist/fragment.min.glsl --format text 4k/fragment.glsl",
+    "minify-js": "mkdir -p dist && npx uglify-js --compress --mangle --mangle-props --toplevel -- 4k/demo-small.js > dist/demo.min.js",
+    "build-html": "printf 'Click!<canvas id=c><script>' > dist/index.html && sed '$s/;*$//' dist/demo.min.js | tr -d '\\n' >> dist/index.html && printf '</script>' >> dist/index.html",
+    "compress": "brotli -f -Z -o entry/index.html.br dist/index.html",
+    "build": "npm run minify-js && npm run build-html && npm run compress"
   },
   "devDependencies": {
     "vite": "^5.0.8"

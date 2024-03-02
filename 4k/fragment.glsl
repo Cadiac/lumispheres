@@ -389,8 +389,8 @@ void main() {
   vec3 color = render(u_camera, sunDir, xy, z);
 
   // Fade in
-  if (u_time < 2000.) {
-    color = mix(color, vec3(0.), (2000. - u_time) / 2000.);
+  if (u_time < 5000.) {
+    color = mix(color, vec3(0.), (5000. - u_time) / 5000.);
   }
 
   color = smoothstep(0.0, 1.0, color);

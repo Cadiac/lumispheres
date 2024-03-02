@@ -1,19 +1,29 @@
-# Spheres - 4k intro
+# Lumispheres - 4k intro
 
-![Screenshot](https://github.com/Cadiac/spheres/blob/main/entry/screenshot.png)
+![Screenshot](https://github.com/Cadiac/lumispheres/blob/main/entry/screenshot.png)
 
-First released at Instanssi 2024, being my second 4k intro.
+First released at Instanssi 2024. This is my second 4k intro.
 
-Tools: JavaScript, WebGL, [SoundBox](https://gitlab.com/mbitsnbites/soundbox), [Brotli](https://github.com/google/brotli), [Shader Minifier](http://www.ctrl-alt-test.fr), [UglifyJS](https://github.com/mishoo/UglifyJS)
+Tools:
+
+- JavaScript
+- WebGL
+- [SoundBox](https://gitlab.com/mbitsnbites/soundbox)
+- [Brotli](https://github.com/google/brotli)
+- [Shader Minifier](http://www.ctrl-alt-test.fr)
+- [UglifyJS](https://github.com/mishoo/UglifyJS)
 
 <!-- ## Online version, TODO
-https://spheres.cadi.ac/ -->
+https://lumispheres.cadi.ac/ -->
 
 ## Running locally
 
-Start the provided python server
+See `entry` directory and its `lumispheres.nfo` file.
+
+TL;DR: Go to `entry` directory and start the provided python server
 
 ```shell
+cd entry
 python3 server.py
 ```
 
@@ -73,6 +83,6 @@ Note that this works on the code found within `src/` directory. The actual demo 
 
 This intro is released under MIT license.
 
-Some of the GLSL shader functions are derived from iquilezles.org, as indicated on the `fragment.glsl` file.
+Some of the GLSL shader functions are derived from iquilezles.org, as indicated on the `fragment.glsl` file. Thanks for the great learning resources IQ!
 
-SoundBox synth has its own copyright notice.
+SoundBox synthesizer player has its own copyright notice included on the code.

@@ -23,8 +23,9 @@
 
 First released at Instanssi 2024.
 Source code can be found from https://github.com/Cadiac/lumispheres.
-This has been tested on MacOS Safari & Google Chrome, but at least it was
-working on windows earlier as well..
+This has been tested on Safari & Google Chrome.
+
+Online version: https://lumispheres.cadi.ac/
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -67,3 +68,4 @@ the need for CORS-security settings override.
 Click to start the demo. It should automatically enter full screen mode and
 start after 2 second delay, and exit it once the demo is complete.
 
+PNG version doesn't work on Safari.

@@ -13,8 +13,9 @@ Tools:
 - [Shader Minifier](http://www.ctrl-alt-test.fr)
 - [UglifyJS](https://github.com/mishoo/UglifyJS)
 
-<!-- ## Online version, TODO
-https://lumispheres.cadi.ac/ -->
+## Online version
+
+https://lumispheres.cadi.ac/
 
 ## Running locally
 

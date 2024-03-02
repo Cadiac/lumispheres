@@ -571,6 +571,109 @@ export const run = async (audioCtx, analyser) => {
       beatFolder.add(state.audio, "beat", 0.0, 255, 1).listen();
       beatFolder.add(state.audio, "offset", 0, 127, 1).listen();
 
+      function handleMIDIMessage(event) {
+        if (event.data.length === 3) {
+          const [_, id, value] = event.data;
+
+          console.log(`controller id: ${id}, value: ${value}`);
+
+          switch (id) {
+            case 74: {
+              // Knob 1
+              state.camera.position.x = -64 + value;
+              break;
+            }
+            case 71: {
+              // Know 2;
+              state.camera.position.y = value;
+              break;
+            }
+            case 76: {
+              // Know 3;
+              state.camera.position.z = -64 + value;
+              break;
+            }
+            case 77: {
+              // Know 4;
+              state.box.size = (value / 127) * 100;
+              break;
+            }
+            case 93: {
+              // Know 5;
+              state.camera.target.x = -64 + value;
+              break;
+            }
+            case 18: {
+              // Know 6;
+              state.camera.target.y = -100 + value * 2;
+              break;
+            }
+            case 19: {
+              // Know 7;
+              state.camera.target.z = -64 + value;
+              break;
+            }
+            case 16: {
+              // Know 8;
+              state.box.y = -30 + (value / 127) * 130;
+              break;
+            }
+            case 82: {
+              // Slider 1
+              state.gravity.x = -10 + (value / 127) * 20;
+              break;
+            }
+            case 83: {
+              // Slider 2
+              state.gravity.y = -10 + (value / 127) * 20;
+              break;
+            }
+            case 84: {
+              // Slider 3
+              state.gravity.z = -10 + (value / 127) * 20;
+              break;
+            }
+            case 17: {
+              // Slider 4
+              break;
+            }
+            default: {
+              console.log(`Unmapped input ${id}`);
+            }
+          }
+        }
+      }
+
+      function initDevices(midi) {
+        console.log(`Found ${midi.inputs.size} input devices`);
+
+        if (midi.inputs.size > 0) {
+          var iterator = midi.inputs.values();
+          var input = iterator.next().value;
+          console.log("Connected to the first input: " + input.name);
+          input.onmidimessage = handleMIDIMessage;
+        }
+      }
+
+      function midiReady(midi) {
+        midi.addEventListener("statechange", (event) =>
+          initDevices(event.target)
+        );
+        initDevices(midi);
+      }
+
+      const midiController = {
+        connect: function () {
+          console.log("Initializing MIDI...");
+          navigator
+            .requestMIDIAccess()
+            .then(midiReady, (err) => console.log("Something went wrong", err));
+        },
+      };
+
+      const midiFolder = gui.addFolder("Midi");
+      midiFolder.add(midiController, "connect");
+
       window.requestAnimationFrame(render);
     } catch (err) {
       console.error(err);

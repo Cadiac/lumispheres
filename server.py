@@ -14,7 +14,7 @@ class BrotliHandler(BaseHTTPRequestHandler):
         except FileNotFoundError:
             self.send_error(404, 'File Not Found: %s' % self.path)
 
-port = 8080
+port = 8000
 server_address = ('localhost', port)
 httpd = HTTPServer(server_address, BrotliHandler)
 

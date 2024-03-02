@@ -2,13 +2,13 @@ S = Math.sin
 C = Math.cos
 Y = Math.random
 
-addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    // Stop the demo by crashing it
-    E = 1e9
-    a.close()
-  }
-})
+// addEventListener('keydown', (e) => {
+//   if (e.key === 'Escape') {
+//     // Stop the demo by crashing it
+//     E = 1e9
+//     a.close()
+//   }
+// })
 
 // Music player, based on the "player-small.js".
 // Modified to contain only partial functionality to save some space.
@@ -319,6 +319,9 @@ onclick = () => {
   })
   a = new AudioContext()
 
+  // Instanssi light effects server
+  W = new WebSocket('ws://valot.instanssi:9910')
+
   // Initialize the epoch early to make the first tick have some dt
   // to move the overlapping spheres and not divide by zero
   E = performance.now()
@@ -402,12 +405,32 @@ onclick = () => {
     n.getByteFrequencyData(f)
     t = 0.5 * t + (t * f[90]) / 32 // 90: Hihat, 6: Bass, 22: Overall mood
 
-    // Gravity & fading the illuminated spheres back to dark over time
-    s.map((sphere) => {
-      sphere.i = Math.max(0, sphere.i - 6 * t * (1 - sphere.i))
-      sphere.v = H(sphere.v, J(G, [t, t, t]))
-      sphere.p = H(sphere.p, J(sphere.v, [t, t, t]))
-    })
+    // Control Instanssi light effects server
+    W.send(
+      new Uint8Array([
+        1, // 1
+        0, // Nick tag
+        67, // C
+        65, // A
+        68, // D
+        0, // Nick tag end
+        ...s.flatMap((sphere, i) => {
+          // Fading out illuminated spheres back to dark over time
+          sphere.i = Math.max(0, sphere.i - 6 * t * (1 - sphere.i))
+          // Apply gravity
+          sphere.v = H(sphere.v, J(G, [t, t, t]))
+          sphere.p = H(sphere.p, J(sphere.v, [t, t, t]))
+          return [
+            1, // Effect type: light
+            (i + 17) % 24, // Light seleciton, 24 lights
+            0, // Reserved for future expansion, always zero.
+            255 * sphere.i, // R
+            50 * sphere.i, // G
+            0 // B
+          ]
+        })
+      ])
+    )
 
     // Spheres collisions with each other
     for (i = 0; i < 13; i++) for (j = i + 1; j < 13; j++) e(s[i], s[j])
@@ -533,6 +556,7 @@ onclick = () => {
   // Time and last frame time
   o = q = 0
 
-  c.requestFullscreen().then(R)
+  setTimeout(() => c.requestFullscreen().then(R), 1000)
+  // c.requestFullscreen().then(R)
   // R()
 }

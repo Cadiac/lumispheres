@@ -1,16 +1,25 @@
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-| Entry name: Lumispheres                                                      |
-| Party: Instanssi 2019                                                        |
-| Compo: Pikkiriikkinen demo (4K)                                              |
-| Code & Music: Cadiac                                                         |
-| Tools used:                                                                  |
-| - JavaScript                                                                 |
-| - WebGL                                                                      |
-| - SoundBox (https://gitlab.com/mbitsnbites/soundbox)                         |
-| - Shader Minifier (http://www.ctrl-alt-test.fr)                              |
-| - UglifyJS (https://github.com/mishoo/UglifyJS)                              |
-| - Brotli (https://github.com/google/brotli)                                  |
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+             ███████     ████    ████   █████   ████     ██████ 
+             █ ████ █  █    ▓█   █   █   █ █   █   █    █ ████ █
+            █░█     ▒█ █ ████ █  █ █  █  █░█  █ ███ █   █░█    ▒█
+            █░█       ░█ █  █ █  █░█ ░█  █░█  █░█  █ █  █░█      
+            █▒█   ░▒█░▒█░████░█░░█░█░░█  █▒█ ░█░████░█ ▒█▒█▒  ░▒█
+           ░▓███████▓ ▓███ ▓███▓ █████▓ ▓███▓▒██▓░ ███▓ ▓███████▓░
+                                                             2024
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    | Entry name: Lumispheres                                              |
+    | Party: Instanssi 2019                                                |
+    | Compo: Pikkiriikkinen demo (4K)                                      |
+    | Code & Music: Cadiac                                                 |
+    | Tools used:                                                          |
+    | - JavaScript                                                         |
+    | - WebGL                                                              |
+    | - SoundBox (https://gitlab.com/mbitsnbites/soundbox)                 |
+    | - Shader Minifier (http://www.ctrl-alt-test.fr)                      |
+    | - UglifyJS (https://github.com/mishoo/UglifyJS)                      |
+    | - Brotli (https://github.com/google/brotli)                          |
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First released at Instanssi 2024.
 Source code can be found from https://github.com/Cadiac/lumispheres.

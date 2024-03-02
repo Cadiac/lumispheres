@@ -3,7 +3,6 @@ precision highp float;
 uniform float u_time;
 uniform vec3 u_resolution;
 uniform vec3 u_camera;
-uniform vec3 u_target;
 
 const float MAX_DIST = 2000.0;
 const float EPSILON = .0001;
@@ -11,7 +10,7 @@ const int MAX_ITERATIONS = 500;
 
 const vec3 FOG_COLOR = vec3(0.5, 0.3, 0.2);
 const vec3 SKY_COLOR = vec3(0.9, 0.96, 0.91);
-
+const vec3 TARGET = vec3(0., 20., 0.);
 const float BOX_SIZE = 10.;
 const float BOX_Y = 10.;
 
@@ -25,6 +24,33 @@ struct R {
   bool h;
 };
 
+/**
+ * The following functions and raymarching algorithms are derived from iq's
+ * website, published under MIT license:
+ * - https://iquilezles.org/articles/distfunctions/ - opUnion, dot2,
+ * udQuad, sdSphere, sdPlane, sdBox
+ * - https://iquilezles.org/articles/raymarchingdf/ - raymarching
+ * - https://iquilezles.org/articles/palettes - palette
+ * - https://iquilezles.org/articles/filterableprocedurals - filteredGrid -
+ * analytically box-filtered grid
+ *
+ * The MIT License
+ * Copyright © 2019 Inigo Quilez
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions: The above copyright
+ * notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS",
+ * WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 vec2 opUnion(vec2 a, vec2 b) {
   if (a.y < b.y) {
     return a;
@@ -176,24 +202,9 @@ float sphereLight(vec3 p, vec3 normal, vec4 sphere) {
 
   float c = dot(normal, dir);
   float s = floor(sphere.w) / dist;
-  float i = fract(sphere.w) * 1.2;
+  float i = fract(sphere.w) * 1.2; // Boost the illuminated spheres
 
   return max(0., c * s * i);
-}
-
-float sphIntersect(in vec3 p, in vec3 rayDir, in vec4 sphere) {
-  vec3 rayOriginToSphereCenter = p - sphere.xyz;
-  float radius = floor(sphere.w);
-  float b = dot(rayOriginToSphereCenter, rayDir);
-  float c =
-      dot(rayOriginToSphereCenter, rayOriginToSphereCenter) - radius * radius;
-  float h = b * b - c;
-
-  if (h < 0.0) {
-    return -1.0;
-  }
-
-  return -b - sqrt(h);
 }
 
 vec3 palette(in float t) {
@@ -204,8 +215,9 @@ vec3 palette(in float t) {
                              vec3(0.19)));
 }
 
-vec3 shade(vec3 p, vec3 rayDir, vec3 normal, float id) {
+vec3 lightning(vec3 p, vec3 rayDir, vec3 normal, float id) {
   // vec3 base = id >= SPHERE ? vec3(0.6, 0.5, 0.4) : vec3(1.0);
+  // vec3 base = id >= SPHERE ? vec3(1.0) : vec3(0.0);
   vec3 base = vec3(1.0);
   vec3 sphereLightColor = palette(id - SPHERE / float(SPHERES_COUNT));
 
@@ -277,20 +289,23 @@ float filteredGrid(in vec2 p, in vec2 ddx, in vec2 ddy) {
   return (1.0 - i.x) * (1.0 - i.y);
 }
 
-mat4 lookAt(vec3 camera, vec3 target, vec3 up) {
-  vec3 f = normalize(target - camera);
-  vec3 s = normalize(cross(up, f));
+// mat4 lookAt(vec3 camera, vec3 target, vec3 up) {
+//   vec3 f = normalize(target - camera);
+//   vec3 s = normalize(cross(up, f));
+//   vec3 u = cross(f, s);
+//   return mat4(vec4(s, .0), vec4(u, .0), vec4(-f, .0), vec4(.0, .0, .0, 1.));
+// }
+
+vec3 render(vec3 camera, vec3 sunDir, vec2 xy, float z) {
+  // Bit of inlining to benefit from the constant as much as possible,
+  // seems to save a few bytes
+  vec3 f = normalize(TARGET - camera);
+  vec3 s = normalize(cross(vec3(0., 1., 0.), f));
   vec3 u = cross(f, s);
 
-  return mat4(vec4(s, .0), vec4(u, .0), vec4(-f, .0), vec4(.0, .0, .0, 1.));
-}
-
-vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
-  // mat4 viewToWorld =
-  //     lookAt(u_camera, u_target,
-  //            normalize(vec3(sin(u_time / 10000.), cos(u_time / 10000.),
-  //            0.)));
-  mat4 viewToWorld = lookAt(camera, target, normalize(vec3(0., 1., 0.)));
+  mat4 viewToWorld =
+      mat4(vec4(s, .0), vec4(u, .0), vec4(-f, .0), vec4(.0, .0, .0, 1.));
+  // mat4 viewToWorld = lookAt(camera, TARGET, normalize(vec3(0., 1., 0.)));
 
   vec3 viewDir = normalize(vec3(xy, -z));
   vec3 rayDir = (viewToWorld * vec4(viewDir, 0.0)).xyz;
@@ -329,7 +344,7 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
                    : vec3(0., 0., -1.); // FLOOR_FRONT as default
     }
 
-    vec3 light = shade(ray.m, rayDir, normal, ray.d.x);
+    vec3 light = lightning(ray.m, rayDir, normal, ray.d.x);
 
     color = mix(color, light, fresnel);
 
@@ -344,8 +359,6 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
     fresnel = clamp(1. + dot(rayDir, normal), 0., 1.);
     fresnel = 0.5 + (0.01 + 0.4 * pow(fresnel, 3.5));
 
-    // Analytically box-filtered grid by Inigo Quilez, MIT License
-    // https://iquilezles.org/articles/filterableprocedurals
     vec3 ddx_pos =
         camera - ddxDir * dot(camera - ray.m, normal) / dot(ddxDir, normal);
     vec3 ddy_pos =
@@ -371,15 +384,9 @@ void main() {
   vec2 xy = gl_FragCoord.xy - u_resolution.xy / 2.0;
   float z = u_resolution.y / tan(0.5);
 
-  vec3 sunDir = vec3(-0.0123, 0.02, -0.9997);
+  vec3 sunDir = vec3(0, 0, -1);
 
-  vec3 color = render(u_camera, u_target, sunDir, xy, z);
-
-  // Color shift taken from some IQ production in outdoor lightning
-  // - do I actually want these?
-  // color = pow(color, COLOR_SHIFT);
-  // color *= vec3(1.02, 0.99, 0.9);
-  // color.z = color.z + 0.1;
+  vec3 color = render(u_camera, sunDir, xy, z);
 
   // Fade in
   if (u_time < 2000.) {

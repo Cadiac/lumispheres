@@ -463,7 +463,7 @@ export const run = async (audioCtx, analyser) => {
       state.frame += 1;
       window.requestAnimationFrame(render);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       alert("Error: " + err.message);
     }
   }
@@ -575,9 +575,126 @@ export const run = async (audioCtx, analyser) => {
         if (event.data.length === 3) {
           const [_, id, value] = event.data;
 
-          console.log(`controller id: ${id}, value: ${value}`);
+          console.debug(`controller id: ${id}, value: ${value}`);
 
           switch (id) {
+            case 48: {
+              // C3
+              if (value > 0) {
+                state.spheres.objects[0].illumination = 0.99;
+              } else {
+                state.spheres.objects[0].illumination = 0;
+              }
+              break;
+            }
+            case 50: {
+              // D3
+              if (value > 0) {
+                state.spheres.objects[1].illumination = 0.99;
+              } else {
+                state.spheres.objects[1].illumination = 0;
+              }
+              break;
+            }
+            case 52: {
+              // E3
+              if (value > 0) {
+                state.spheres.objects[2].illumination = 0.99;
+              } else {
+                state.spheres.objects[2].illumination = 0;
+              }
+              break;
+            }
+            case 53: {
+              // F3
+              if (value > 0) {
+                state.spheres.objects[3].illumination = 0.99;
+              } else {
+                state.spheres.objects[3].illumination = 0;
+              }
+              break;
+            }
+            case 55: {
+              // G3
+              if (value > 0) {
+                state.spheres.objects[4].illumination = 0.99;
+              } else {
+                state.spheres.objects[4].illumination = 0;
+              }
+              break;
+            }
+            case 57: {
+              // A3
+              if (value > 0) {
+                state.spheres.objects[5].illumination = 0.99;
+              } else {
+                state.spheres.objects[5].illumination = 0;
+              }
+              break;
+            }
+            case 59: {
+              // B3
+              if (value > 0) {
+                state.spheres.objects[6].illumination = 0.99;
+              } else {
+                state.spheres.objects[6].illumination = 0;
+              }
+              break;
+            }
+            case 60: {
+              // C4
+              if (value > 0) {
+                state.spheres.objects[7].illumination = 0.99;
+              } else {
+                state.spheres.objects[7].illumination = 0;
+              }
+              break;
+            }
+            case 62: {
+              // D4
+              if (value > 0) {
+                state.spheres.objects[8].illumination = 0.99;
+              } else {
+                state.spheres.objects[8].illumination = 0;
+              }
+              break;
+            }
+            case 64: {
+              // E4
+              if (value > 0) {
+                state.spheres.objects[9].illumination = 0.99;
+              } else {
+                state.spheres.objects[9].illumination = 0;
+              }
+              break;
+            }
+            case 65: {
+              // F4
+              if (value > 0) {
+                state.spheres.objects[10].illumination = 0.99;
+              } else {
+                state.spheres.objects[10].illumination = 0;
+              }
+              break;
+            }
+            case 67: {
+              // G4
+              if (value > 0) {
+                state.spheres.objects[11].illumination = 0.99;
+              } else {
+                state.spheres.objects[11].illumination = 0;
+              }
+              break;
+            }
+            case 69: {
+              // A4
+              if (value > 0) {
+                state.spheres.objects[12].illumination = 0.99;
+              } else {
+                state.spheres.objects[12].illumination = 0;
+              }
+              break;
+            }
             case 74: {
               // Knob 1
               state.camera.position.x = -64 + value;
@@ -638,19 +755,19 @@ export const run = async (audioCtx, analyser) => {
               break;
             }
             default: {
-              console.log(`Unmapped input ${id}`);
+              console.debug(`Unmapped input ${id}`);
             }
           }
         }
       }
 
       function initDevices(midi) {
-        console.log(`Found ${midi.inputs.size} input devices`);
+        console.debug(`Found ${midi.inputs.size} input devices`);
 
         if (midi.inputs.size > 0) {
           var iterator = midi.inputs.values();
           var input = iterator.next().value;
-          console.log("Connected to the first input: " + input.name);
+          console.debug("Connected to the first input: " + input.name);
           input.onmidimessage = handleMIDIMessage;
         }
       }
@@ -664,10 +781,12 @@ export const run = async (audioCtx, analyser) => {
 
       const midiController = {
         connect: function () {
-          console.log("Initializing MIDI...");
+          console.debug("Initializing MIDI...");
           navigator
             .requestMIDIAccess()
-            .then(midiReady, (err) => console.log("Something went wrong", err));
+            .then(midiReady, (err) =>
+              console.debug("Something went wrong", err)
+            );
         },
       };
 

@@ -1,3 +1,7 @@
+// This was an early messy version of the shader
+// with bunch of uniforms to play with. The shader
+// that ended up on the demo was forked off this.
+
 precision highp float;
 
 const float MAX_DIST = 2000.0;
@@ -44,6 +48,34 @@ struct Ray {
   int steps;
   bool is_hit;
 };
+
+/**
+ * The following functions and raymarching algorithms are derived from iq's
+ * website, published under MIT license:
+ * - https://iquilezles.org/articles/distfunctions/ - opUnion, dot2,
+ * udQuad, sdSphere, sdPlane, sdBox
+ * - https://iquilezles.org/articles/raymarchingdf/ - raymarching
+ * - https://iquilezles.org/articles/palettes - palette
+ * - https://iquilezles.org/articles/filterableprocedurals - filteredGrid -
+ * analytically box-filtered grid
+ *
+ * The MIT License
+ * Copyright © 2019 Inigo Quilez
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions: The above copyright
+ * notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS",
+ * WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 Surface opUnion(Surface a, Surface b) {
   if (a.dist < b.dist) {
@@ -251,21 +283,6 @@ float sphereLight(vec3 p, vec3 normal, vec4 sphere) {
   return max(0., c * s * i);
 }
 
-float sphIntersect(in vec3 p, in vec3 rayDir, in vec4 sphere) {
-  vec3 rayOriginToSphereCenter = p - sphere.xyz;
-  float radius = floor(sphere.w);
-  float b = dot(rayOriginToSphereCenter, rayDir);
-  float c =
-      dot(rayOriginToSphereCenter, rayOriginToSphereCenter) - radius * radius;
-  float h = b * b - c;
-
-  if (h < 0.0) {
-    return -1.0;
-  }
-
-  return -b - sqrt(h);
-}
-
 vec3 palette(in float t) {
   return u_palette_a +
          u_palette_b *
@@ -276,7 +293,7 @@ vec3 palette(in float t) {
                   u_palette_d));
 }
 
-vec3 shade(vec3 p, vec3 rayDir, vec3 normal, int id) {
+vec3 lightning(vec3 p, vec3 rayDir, vec3 normal, int id) {
   // vec3 base = id >= SPHERE ? vec3(0.6, 0.5, 0.4) : vec3(1.0);
   vec3 base = vec3(1.0);
   vec3 sphereLightColor = palette(float(id - SPHERE) / float(SPHERES_COUNT));
@@ -402,7 +419,7 @@ vec3 render(vec3 camera, vec3 target, vec3 sunDir, vec2 xy, float z) {
       normal = normalize(ray.pos - currentSphere.xyz);
     }
 
-    vec3 light = shade(ray.pos, rayDir, normal, ray.surface.id);
+    vec3 light = lightning(ray.pos, rayDir, normal, ray.surface.id);
 
     color = mix(color, light, fresnel);
 

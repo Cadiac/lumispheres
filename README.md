@@ -2,9 +2,13 @@
 
 ![Screenshot](https://github.com/Cadiac/lumispheres/blob/main/entry/screenshot.png)
 
-First released at Instanssi 2024. This is my second 4k intro.
+First released at Instanssi 2024, placing on 2nd place.
 
-Tools:
+At the version seen at instanssi the demo also controlled the hall lights, but
+the version included here on entry directory here doesn't do that as it crashes
+if it can't reach the effects server.
+
+Tools used:
 
 - JavaScript
 - WebGL
@@ -12,6 +16,8 @@ Tools:
 - [Brotli](https://github.com/google/brotli)
 - [Shader Minifier](http://www.ctrl-alt-test.fr)
 - [UglifyJS](https://github.com/mishoo/UglifyJS)
+
+This is my second 4k intro.
 
 ## Online version
 

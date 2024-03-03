@@ -31,7 +31,7 @@ Online version: https://lumispheres.cadi.ac/
 
 How to run:
 
-Brotli version (4083 bytes):
+Brotli version (4076 bytes): index.html
 Start the provided minimal python server up with
 
 $ python3 server.py
@@ -39,7 +39,7 @@ $ python3 server.py
 and open http://localhost:8000 on the browser.
 
 Click to start the demo. It should enter full screen and start
-running after a 2 second delay.
+running after a delay.
 
 All the server does is it hosts the entry and sets "Content-Encoding: br"
 header to the file it serves. This enables the browser to correctly decompress
@@ -47,7 +47,25 @@ the entry file it receives and interpret it as a HTML file.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PNG Version (4604 bytes):
+Instanssi version (4083 bytes): index.lights.html
+
+This version came with support to control the lights at the event hall using
+the local network effects server. This version crashes and only black screen
+is seen if it can't reach the server, so this version can really only be run
+at the Instanssi venue.
+
+Start the provided minimal python server up with
+
+$ python3 server.py
+
+and open http://localhost:8000/index.instanssi.html on the browser.
+
+Click to start the demo. It should enter full screen and start
+running after a delay.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+PNG Version (4604 bytes): index.png.html
 Tool used: PnginatorModified
 (https://gitlab.com/tmptknn/pipeline/-/blob/main/tools/pnginator_modified.rb)
 

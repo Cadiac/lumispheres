@@ -2,6 +2,12 @@
 
 ![Screenshot](https://github.com/Cadiac/lumispheres/blob/main/entry/screenshot.png)
 
+## Online version
+
+https://lumispheres.cadi.ac/
+
+## About
+
 First released at Instanssi 2024, placing on 2nd place.
 
 At the version seen at instanssi the demo also controlled the hall lights, but
@@ -18,10 +24,6 @@ Tools used:
 - [UglifyJS](https://github.com/mishoo/UglifyJS)
 
 This is my second 4k intro.
-
-## Online version
-
-https://lumispheres.cadi.ac/
 
 ## Running locally
 

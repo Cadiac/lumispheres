@@ -8,7 +8,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Content-type', 'text/html')
 
-        if self.path == '/':
+        if self.path == '/' or self.path == '/index.instanssi.html':
             self.send_header('Content-Encoding', 'br')
         super().end_headers()
 

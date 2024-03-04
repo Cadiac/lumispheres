@@ -31,7 +31,7 @@ Online version: https://lumispheres.cadi.ac/
 
 How to run:
 
-Brotli version (4076 bytes): index.html
+Brotli version (4088 bytes): index.html
 Start the provided minimal python server up with
 
 $ python3 server.py

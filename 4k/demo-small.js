@@ -312,7 +312,7 @@ onclick = () => {
         c:[{n:[111],f:[]}]
       }
     ],
-    r:7000,
+    r:7200,
     p:32,
     e:12,
     n:8
@@ -386,7 +386,8 @@ onclick = () => {
     t = (o - q) / 1000
     q = o
 
-    // Apply camera movements. Macig number 9600 is calculated from the BPM 100
+    // Apply camera movements. Magic number 10000 was first 9600 and calculated
+    // from the BPM 100, but that didn't quite match and 10000 looked better.
     // This also stops the demo by crashing it once index goes out of bounds.
     // Not elegant, but reliable and takes zero space so yay?
     ;[x, y, z] = D[(o / 10000) | 0]
@@ -495,8 +496,6 @@ onclick = () => {
   n.fftSize = 256
   f = new Uint8Array(n.frequencyBinCount)
 
-  d.play()
-
   b = g.createShader(0x8b31) // g.VERTEX_SHADER
   g.shaderSource(b, `attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`)
   g.compileShader(b)
@@ -543,7 +542,10 @@ onclick = () => {
   o = q = 0
 
   // Wait for a to let the browser to properly enter fullscreen.
-  c.requestFullscreen().then(setTimeout(R, 1000))
-  // c.requestFullscreen().then(R)
-  // R()
+  c.requestFullscreen().then(
+    setTimeout(() => {
+      d.play() // Start the music
+      R() // Start the render loop
+    }, 1000)
+  )
 }

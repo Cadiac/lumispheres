@@ -4,32 +4,39 @@ import { CPlayer } from "./player-small.js";
 
 import song from "./song";
 
-const button = document.querySelector("#start");
+// Canvas gets bound to global "c"
+c.style.position = "fixed";
+c.style.left = 0;
+c.style.top = 0;
+c.width = window.innerWidth;
+c.height = window.innerHeight;
 
-button.addEventListener("click", (event) => {
-  const t0 = new Date();
-  const player = new CPlayer(song);
-  const audioCtx = new AudioContext();
+c.addEventListener(
+  "click",
+  (_event) => {
+    const t0 = new Date();
+    const player = new CPlayer(song);
+    const audioCtx = new AudioContext();
 
-  while (player.generate() < 1);
+    while (player.generate() < 1);
 
-  const t1 = new Date();
-  console.log("done (" + (t1 - t0) + "ms)");
+    const t1 = new Date();
+    console.log("done (" + (t1 - t0) + "ms)");
 
-  // Put the generated song in an Audio element.
-  const wave = player.createWave();
-  const audio = document.createElement("audio");
-  audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
-  audio.onplay = () => audioCtx.resume();
+    // Put the generated song in an Audio element.
+    const wave = player.createWave();
+    const audio = document.createElement("audio");
+    audio.src = URL.createObjectURL(new Blob([wave], { type: "audio/wav" }));
+    audio.onplay = () => audioCtx.resume();
 
-  // Create an analyser
-  const analyser = audioCtx.createAnalyser();
-  const source = audioCtx.createMediaElementSource(audio);
+    // Create an analyser
+    const analyser = audioCtx.createAnalyser();
+    const source = audioCtx.createMediaElementSource(audio);
 
-  source.connect(analyser);
-  analyser.connect(audioCtx.destination);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
 
-  audio.play();
-
-  run(audioCtx, analyser);
-});
+    run(audioCtx, analyser, audio);
+  },
+  { once: true }
+);

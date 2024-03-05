@@ -73,7 +73,7 @@ class Sphere {
   }
 }
 
-export const run = async (audioCtx, analyser) => {
+export const run = async (audioCtx, analyser, audio) => {
   let state = {
     halt: false,
     epoch: performance.now(),
@@ -175,6 +175,7 @@ export const run = async (audioCtx, analyser) => {
     audio: {
       offset: 22,
       beat: 0,
+      play: () => audio.play(),
     },
   };
 
@@ -201,12 +202,7 @@ export const run = async (audioCtx, analyser) => {
 
   const programs = [];
 
-  const canvas = document.createElement("canvas");
-  document.body.appendChild(canvas);
-  canvas.style.position = "fixed";
-  canvas.style.left = canvas.style.top = 0;
-
-  const gl = canvas.getContext("webgl");
+  const gl = c.getContext("webgl");
   const gui = new dat.GUI();
   const fpsCounter = document.querySelector("#fps");
 
@@ -342,8 +338,8 @@ export const run = async (audioCtx, analyser) => {
       ) {
         state.resolution.x = window.innerWidth;
         state.resolution.y = window.innerHeight;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
       }
 
       gl.viewport(0, 0, state.resolution.x, state.resolution.y);
@@ -570,6 +566,7 @@ export const run = async (audioCtx, analyser) => {
       const beatFolder = gui.addFolder("Audio");
       beatFolder.add(state.audio, "beat", 0.0, 255, 1).listen();
       beatFolder.add(state.audio, "offset", 0, 127, 1).listen();
+      beatFolder.add(state.audio, "play");
 
       function handleMIDIMessage(event) {
         if (event.data.length === 3) {

@@ -4,6 +4,8 @@ uniform float u_time;
 uniform vec3 u_resolution;
 uniform vec3 u_camera;
 
+uniform sampler2D u_text;
+
 const float MAX_DIST = 2000.0;
 const float EPSILON = .0001;
 const int MAX_ITERATIONS = 500;
@@ -219,6 +221,12 @@ vec3 lightning(vec3 p, vec3 rayDir, vec3 normal, float id) {
   // vec3 base = id >= SPHERE ? vec3(0.6, 0.5, 0.4) : vec3(1.0);
   // vec3 base = id >= SPHERE ? vec3(1.0) : vec3(0.0);
   vec3 base = vec3(1.0);
+  if (id == FLOOR_BACK) {
+    float u = (-p.x + 10.0) / 20.0;
+    float v = (p.y - 10.0) / 20.0;
+
+    base += texture2D(u_text, vec2(u, v)).xyz;
+  }
   vec3 sphereLightColor = palette(id - SPHERE / float(SPHERES_COUNT));
 
   float occ = occlusion(p, normal);

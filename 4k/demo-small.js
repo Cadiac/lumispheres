@@ -459,9 +459,13 @@ onclick = () => {
     g.uniform3f(u('m'), ...P) // Camera position
     // g.uniform3f(u('m'), ...T) // Camera target - constant
 
+    g.activeTexture(g.TEXTURE0) // Activate texture unit 0
+    g.bindTexture(g.TEXTURE_2D, textTexture) // Bind the text texture
+    g.uniform1i(u('f'), 0) // Tell the shader we bound the texture to texture unit 0
+
     // Spheres
     g.uniform4fv(
-      u('n'),
+      u('s'),
       // u('u_spheres'),
       s.flatMap((s) => [
         ...s.p,
@@ -477,10 +481,29 @@ onclick = () => {
   }
 
   d = document.createElement('audio')
-  document.body.appendChild(c)
 
   c.style.position = 'fixed'
   c.style.left = c.style.top = 0
+
+  const textCanvas = document.createElement('canvas')
+  textCanvas.width = 512
+  textCanvas.height = 512
+  const textCtx = textCanvas.getContext('2d')
+
+  textCtx.font = '50px sans-serif'
+  textCtx.strokeStyle = 'green'
+  textCtx.lineWidth = 2
+  textCtx.shadowColor = 'rgba(0, 0, 0, 0.5)'
+  textCtx.shadowBlur = 4
+  textCtx.shadowOffsetX = 3
+  textCtx.shadowOffsetY = 3
+  // textCtx.globalAlpha = 0.5
+  const gradient = textCtx.createLinearGradient(0, 0, textCanvas.width, 0)
+  gradient.addColorStop('0', 'magenta')
+  gradient.addColorStop('0.5', 'blue')
+  gradient.addColorStop('1.0', 'red')
+  textCtx.fillStyle = gradient
+  textCtx.fillText('Hello World 🍞', 50, 200)
 
   g = c.getContext('webgl')
   u = (loc) => g.getUniformLocation(p, loc)
@@ -506,7 +529,7 @@ onclick = () => {
   // fs = await fetch('4k/fragment.glsl').then((r) => r.text())
   g.shaderSource(
     b,
-    `precision highp float;uniform float v;uniform vec3 d,m;const vec3 c=vec3(.5,.3,.2),f=vec3(.9,.96,.91),i=vec3(0,20,0);uniform vec4 n[13];struct R{vec2 d;vec3 m;int i;bool h;};vec2 t(vec2 d,vec2 m){return d.y<m.y?d:m;}float t(vec3 v){return dot(v,v);}float t(vec3 v,vec3 m,vec3 d,vec3 z,vec3 y){vec3 f=d-m,x=v-m,i=z-d,w=v-d,c=y-z,n=v-z,a=m-y,h=v-y,l=cross(f,a);return sqrt(sign(dot(cross(f,l),x))+sign(dot(cross(i,l),w))+sign(dot(cross(c,l),n))+sign(dot(cross(a,l),h))<3.?min(min(min(t(f*clamp(dot(f,x)/t(f),0.,1.)-x),t(i*clamp(dot(i,w)/t(i),0.,1.)-w)),t(c*clamp(dot(c,n)/t(c),0.,1.)-n)),t(a*clamp(dot(a,h)/t(a),0.,1.)-h)):dot(l,x)*dot(l,x)/t(l));}float s(vec3 v){vec3 d=abs(v)-vec3(10);return length(max(d,0.))+min(max(d.x,max(d.y,d.z)),0.);}vec4 x;vec2 r(vec3 v){vec2 d=vec2(1,dot(v,vec3(0,1,0)));float f=s(v-vec3(0,20,0));if(f<d.y){vec2 m=vec2(5,t(v,vec3(10,10,-10),vec3(10,30,-10),vec3(-10,30,-10),vec3(-10,10,-10)));m=t(m,vec2(3,t(v,vec3(10),vec3(10,10,-10),vec3(10,30,-10),vec3(10,30,10))));m=t(m,vec2(4,t(v,vec3(-10,10,10),vec3(-10,10,-10),vec3(-10,30,-10),vec3(-10,30,10))));m=t(m,vec2(2,t(v,vec3(10,30,10),vec3(-10,30,10),vec3(-10,30,-10),vec3(10,30,-10))));m=t(m,vec2(1,t(v,vec3(10),vec3(-10,10,10),vec3(-10,10,-10),vec3(10,10,-10))));for(int i=0;i<13;++i){vec2 c=vec2(7.+float(i),length(v-n[i].xyz)-floor(n[i].w));if(c.y<m.y)m=c,x=n[i];}if(m.y<d.y)return m;}return d;}vec3 r(vec3 d,vec3 v){vec3 m=exp2(-abs(v.y<0.?1e8:(250.-d.y)/v.y)*.001*vec3(1));return(f-.5*v.y)*m+(1.-m)*c;}float r(vec3 m,vec3 v,vec4 d){vec3 f=d.xyz-m;float c=length(f),i=dot(v,f),x=i,l=floor(d.w);if(i<l)x=pow(clamp((i+l)/(2.*l),0.,1.),1.5)*l;return clamp(l*l*x/(c*c*c),0.,1.);}float s(vec3 v,vec3 m){float d=1.;for(int i=0;i<13;i++)d*=1.-r(v,m,n[i]);return d;}float s(vec3 m,vec3 v,vec4 d){vec3 f=d.xyz-m;float x=sqrt(dot(f,f));return max(0.,dot(v,f/x)*(floor(d.w)/x)*(fract(d.w)*1.2));}vec3 p(float d){return vec3(.37,.1,.1)+vec3(.68,.29,.29)*cos(6.283184*(vec3(.04,.04,.8)*sin(10.*d+v/1e3)+vec3(.19)));}vec3 p(vec3 d,vec3 v,vec3 m,float f){vec3 c=p(f-7./float(13));float i=s(d,m);vec3 t=vec3(0);for(int y=0;y<13;y++)t+=s(d,m,n[y])*p(float(y)/float(13));vec3 r=vec3(1)*i*(1.-sqrt((.5+.5*-m.y)/(d.y+.5))*.5)*.4;r+=t+(f>=7.?c*fract(x.w)*2.:vec3(0));return r;}R p(vec3 v,vec3 d){float m=1e-4,f=1e-4;R i;for(int c=0;c<500;c++){m=.001*f;i.m=v+f*d;i.d=r(i.m);if(i.d.y<m){i.h=true;i.i=c;break;}f+=i.d.y;if(f>=2e3)break;}i.d.y=f;return i;}float p(vec2 v,vec2 d,vec2 f){vec2 m=max(abs(d),abs(f))+.01,i=v+.5*m,x=v-.5*m,l=(floor(i)+min(fract(i)*60.,1.)-floor(x)-min(fract(x)*60.,1.))/(60.*m);return(1.-l.x)*(1.-l.y);}vec3 t(vec3 v,vec2 d,float m){vec3 f=vec3(0,0,-1),l=normalize(i-v),y=normalize(cross(vec3(0,1,0),l));mat4 a=mat4(vec4(y,0),vec4(cross(l,y),0),vec4(-l,0),vec4(0,0,0,1));vec3 n=(a*vec4(normalize(vec3(d,-m)),0)).xyz,z=(a*vec4(normalize(vec3(d+vec2(1,0),-m)),0)).xyz,h=(a*vec4(normalize(vec3(d+vec2(0,1),-m)),0)).xyz,t=vec3(0);float w=1.,s=0.;for(int b=0;b<5;b++){R e=p(v,n);if(!e.h){t=mix(t,r(v,n),w);float C=clamp(dot(f,n),0.,1.);t+=.5*vec3(1,.5,.2)*pow(C,10.);break;}s+=e.d.y;vec3 k;k=e.d.x>=7.?normalize(e.m-x.xyz):e.d.x==1.?vec3(0,1,0):e.d.x==2.?vec3(0,-1,0):e.d.x==3.?vec3(-1,0,0):e.d.x==4.?vec3(1,0,0):e.d.x==5.?vec3(0,0,1):vec3(0,0,-1);vec3 C=p(e.m,n,k,e.d.x);t=mix(t,C,w);vec3 E=exp2(-s*.002*vec3(1));if(e.d.x!=1.){t=t*E+(1.-E)*c;break;}w=clamp(1.+dot(n,k),0.,1.);w=.01+.4*pow(w,3.5)+.5;vec3 D=v-z*dot(v-e.m,k)/dot(z,k),B=v-h*dot(v-e.m,k)/dot(h,k);float g=p(.5*e.m.xz,.5*(D.xz-e.m.xz),.5*(B.xz-e.m.xz));w*=.5*g;t*=g;t=t*E+(1.-E)*c;v=e.m;n=reflect(n,k);}return t;}void main(){vec2 f=gl_FragCoord.xy-d.xy/2.;vec3 i=t(m,f,d.y/tan(.5));if(v<5e3)i=mix(i,vec3(0),(5e3-v)/5e3);i=smoothstep(0.,1.,i);gl_FragColor=vec4(i,1);}`
+    `precision highp float;uniform float v;uniform vec3 d,m;uniform sampler2D f;const vec3 c=vec3(.5,.3,.2),i=vec3(.9,.96,.91),x=vec3(0,20,0);uniform vec4 s[13];struct R{vec2 d;vec3 m;int i;bool h;};vec2 t(vec2 d,vec2 m){return d.y<m.y?d:m;}float t(vec3 v){return dot(v,v);}float t(vec3 v,vec3 m,vec3 d,vec3 s,vec3 z){vec3 f=d-m,x=v-m,y=s-d,h=v-d,i=z-s,w=v-s,c=m-z,a=v-z,n=cross(f,c);return sqrt(sign(dot(cross(f,n),x))+sign(dot(cross(y,n),h))+sign(dot(cross(i,n),w))+sign(dot(cross(c,n),a))<3.?min(min(min(t(f*clamp(dot(f,x)/t(f),0.,1.)-x),t(y*clamp(dot(y,h)/t(y),0.,1.)-h)),t(i*clamp(dot(i,w)/t(i),0.,1.)-w)),t(c*clamp(dot(c,a)/t(c),0.,1.)-a)):dot(n,x)*dot(n,x)/t(n));}float n(vec3 v){vec3 d=abs(v)-vec3(10);return length(max(d,0.))+min(max(d.x,max(d.y,d.z)),0.);}vec4 h;vec2 r(vec3 v){vec2 d=vec2(1,dot(v,vec3(0,1,0)));float f=n(v-vec3(0,20,0));if(f<d.y){vec2 m=vec2(5,t(v,vec3(10,10,-10),vec3(10,30,-10),vec3(-10,30,-10),vec3(-10,10,-10)));m=t(m,vec2(3,t(v,vec3(10),vec3(10,10,-10),vec3(10,30,-10),vec3(10,30,10))));m=t(m,vec2(4,t(v,vec3(-10,10,10),vec3(-10,10,-10),vec3(-10,30,-10),vec3(-10,30,10))));m=t(m,vec2(2,t(v,vec3(10,30,10),vec3(-10,30,10),vec3(-10,30,-10),vec3(10,30,-10))));m=t(m,vec2(1,t(v,vec3(10),vec3(-10,10,10),vec3(-10,10,-10),vec3(10,10,-10))));for(int i=0;i<13;++i){vec2 c=vec2(7.+float(i),length(v-s[i].xyz)-floor(s[i].w));if(c.y<m.y)m=c,h=s[i];}if(m.y<d.y)return m;}return d;}vec3 n(vec3 d,vec3 v){vec3 m=exp2(-abs(v.y<0.?1e8:(250.-d.y)/v.y)*.001*vec3(1));return(i-.5*v.y)*m+(1.-m)*c;}float n(vec3 m,vec3 v,vec4 d){vec3 f=d.xyz-m;float c=length(f),i=dot(v,f),x=i,y=floor(d.w);if(i<y)x=pow(clamp((i+y)/(2.*y),0.,1.),1.5)*y;return clamp(y*y*x/(c*c*c),0.,1.);}float r(vec3 v,vec3 m){float d=1.;for(int i=0;i<13;i++)d*=1.-n(v,m,s[i]);return d;}float r(vec3 m,vec3 v,vec4 d){vec3 f=d.xyz-m;float x=sqrt(dot(f,f));return max(0.,dot(v,f/x)*(floor(d.w)/x)*(fract(d.w)*1.2));}vec3 p(float d){return vec3(.37,.1,.1)+vec3(.68,.29,.29)*cos(6.283184*(vec3(.04,.04,.8)*sin(10.*d+v/1e3)+vec3(.19)));}vec3 n(vec3 d,vec3 v,vec3 m,float i){vec3 c=vec3(1);if(i==5.)c+=texture2D(f,vec2((-d.x+10.)/20.,(d.y-10.)/20.)).xyz;vec3 x=p(i-7./float(13));float y=r(d,m);vec3 t=vec3(0);for(int n=0;n<13;n++)t+=r(d,m,s[n])*p(float(n)/float(13));vec3 n=c*y*(1.-sqrt((.5+.5*-m.y)/(d.y+.5))*.5)*.4;n+=t+(i>=7.?x*fract(h.w)*2.:vec3(0));return n;}R p(vec3 v,vec3 d){float m=1e-4,c=1e-4;R f;for(int i=0;i<500;i++){m=.001*c;f.m=v+c*d;f.d=r(f.m);if(f.d.y<m){f.h=true;f.i=i;break;}c+=f.d.y;if(c>=2e3)break;}f.d.y=c;return f;}float p(vec2 v,vec2 d,vec2 f){vec2 m=max(abs(d),abs(f))+.01,i=v+.5*m,x=v-.5*m,h=(floor(i)+min(fract(i)*60.,1.)-floor(x)-min(fract(x)*60.,1.))/(60.*m);return(1.-h.x)*(1.-h.y);}vec3 t(vec3 v,vec2 d,float m){vec3 f=vec3(0,0,-1),i=normalize(x-v),y=normalize(cross(vec3(0,1,0),i));mat4 s=mat4(vec4(y,0),vec4(cross(i,y),0),vec4(-i,0),vec4(0,0,0,1));vec3 z=(s*vec4(normalize(vec3(d,-m)),0)).xyz,a=(s*vec4(normalize(vec3(d+vec2(1,0),-m)),0)).xyz,w=(s*vec4(normalize(vec3(d+vec2(0,1),-m)),0)).xyz,r=vec3(0);float b=1.,t=0.;for(int u=0;u<5;u++){R l=p(v,z);if(!l.h){r=mix(r,n(v,z),b);float C=clamp(dot(f,z),0.,1.);r+=.5*vec3(1,.5,.2)*pow(C,10.);break;}t+=l.d.y;vec3 k;k=l.d.x>=7.?normalize(l.m-h.xyz):l.d.x==1.?vec3(0,1,0):l.d.x==2.?vec3(0,-1,0):l.d.x==3.?vec3(-1,0,0):l.d.x==4.?vec3(1,0,0):l.d.x==5.?vec3(0,0,1):vec3(0,0,-1);vec3 C=n(l.m,z,k,l.d.x);r=mix(r,C,b);vec3 D=exp2(-t*.002*vec3(1));if(l.d.x!=1.){r=r*D+(1.-D)*c;break;}b=clamp(1.+dot(z,k),0.,1.);b=.01+.4*pow(b,3.5)+.5;vec3 E=v-a*dot(v-l.m,k)/dot(a,k),B=v-w*dot(v-l.m,k)/dot(w,k);float e=p(.5*l.m.xz,.5*(E.xz-l.m.xz),.5*(B.xz-l.m.xz));b*=.5*e;r*=e;r=r*D+(1.-D)*c;v=l.m;z=reflect(z,k);}return r;}void main(){vec2 f=gl_FragCoord.xy-d.xy/2.;vec3 i=t(m,f,d.y/tan(.5));if(v<5e3)i=mix(i,vec3(0),(5e3-v)/5e3);i=smoothstep(0.,1.,i);gl_FragColor=vec4(i,1);}`
   )
   g.compileShader(b)
   // if (!g.getShaderParameter(b, g.COMPILE_STATUS)) {
@@ -522,6 +545,14 @@ onclick = () => {
     new Float32Array([1, 1, 1, -1, -1, 1, -1, -1]),
     0x88e4 // g.STATIC_DRAW
   )
+
+  textTexture = g.createTexture()
+  g.bindTexture(g.TEXTURE_2D, textTexture)
+  g.pixelStorei(g.UNPACK_FLIP_Y_WEBGL, true) // Flip the texture by the Y axis
+  g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, textCanvas)
+  g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.CLAMP_TO_EDGE)
+  g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.CLAMP_TO_EDGE)
+  g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR)
 
   g.enableVertexAttribArray(0)
   g.vertexAttribPointer(0, 2, 0x1406, false, 0, 0) // g.FLOAT
@@ -542,7 +573,7 @@ onclick = () => {
   o = q = 0
 
   // Wait for a to let the browser to properly enter fullscreen.
-  c.requestFullscreen().then(
+  document.documentElement.requestFullscreen().then(
     setTimeout(() => {
       d.play() // Start the music
       R() // Start the render loop
